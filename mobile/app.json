@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "GHGI Laguna",
+    "slug": "ghgi-laguna",
+    "scheme": "ghgi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "android": {
+      "package": "com.ggh.ghgilaguna"
+    },
+    "extra": {
+      "apiBaseUrl": "http://192.168.254.149:4000/api"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
