@@ -1,0 +1,3415 @@
+{
+  "count": 682,
+  "rows": [
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Barangay I (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Barangay II (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Barangay III (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Barangay IV (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Del Carmen"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Palma"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Agustin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Andres"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Benito"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Gregorio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Ildefonso"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Juan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Miguel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Alaminos",
+      "brgy_name": "Santa Rosa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Bitin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Calo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Dila"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Maitim"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Masaya"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Paciano Rizal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Puypuy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "San Agustin (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "San Nicolas (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Santa Cruz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Santo Domingo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Tagumpay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Bay",
+      "brgy_name": "Tranca"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Baclaran"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Banaybanay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Banlic"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Barangay Dos (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Barangay Tres (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Barangay Uno (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Bigaa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Butong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Casile"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Diezmo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Gulod"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Mamatid"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Marinig"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Niugan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Pittland"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Pulo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "Sala"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cabuyao City",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Balayhangin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Bangyas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Dayap"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Hanggan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Imok"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Kanluran (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Lamot 1"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Lamot 2"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Limao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Mabacan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Masiit"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Paliparan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Perez"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Prinza"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Santo Tomas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Calauan",
+      "brgy_name": "Silangan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Anglas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Bangco"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Bukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Bulajo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Cansuso"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Duhat"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Inao-Awan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Kanluran Talaongan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Labayo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Layasin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Layug"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Mahipon"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Paowin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Poblacion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Silangan Talaongan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Sisilmin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Sumucab"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Tibatib"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Cavinti",
+      "brgy_name": "Udia"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Biñan (Poblacion)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Bungahan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Canlalay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Casile"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "De La Paz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Ganado"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Langkiwa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Loma"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Malaban"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Malamig"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Mampalasan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Platero"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Poblacion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "San Francisco (Halang)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "San Jose"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "San Vicente"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Santo Domingo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Santo Niño"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Santo Tomas (Calabuso)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Soro-soro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Timbao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Tubigan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Biñan",
+      "brgy_name": "Zapote"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Bagong Kalsada"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Banadero"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Banlic"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barandal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 1 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 2 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 3 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 4 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 5 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 6 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Barangay 7 (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Batino"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Bubuyan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Bucal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Bunggo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Burol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Camaligan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Canlubang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Halang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Hornalan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Kay-Anlog"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "La Mesa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Laguerta"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Lawa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Lecheria"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Lingga"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Looc"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Mabato"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Majada Labas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Makiling"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Mapagong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Masili"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Maunong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Mayapa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Milagrosa (Tulo)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Paciano Rizal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Palingon"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Palo-Alto"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Pansol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Parian"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Prinza"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Punta"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Puting Lupa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Real"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Saimsim"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Sampiruhan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "San Cristobal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "San Jose"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "San Juan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Sirang Lupa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Sucol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Turbina"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Ulango"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Calamba",
+      "brgy_name": "Uwisan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Bagong Silang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Calendola"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Chrysanthemum"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Cuyab"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Estrella"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Fatima"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "G.S.I.S."
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Landayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Langgam"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Laram"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Magsaysay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Maharlika"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Narra"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Nueva"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Pacita 1"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Pacita 2"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Poblacion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Riverside"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Rosario"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Sampaguita Village"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "San Lorenzo Ruiz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "San Vicente"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "Santo Niño"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "United Bayanihan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of San Pedro",
+      "brgy_name": "United Better Living"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Aplaya"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Balibago"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Caingin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Dila"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Dita"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Don Jose"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Ibaba"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Kanluran (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Labas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Macabling"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Malitlit"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Malusak (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Market Area (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Pook"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Pulong Santa Cruz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Santo Domingo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Sinalhan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "City of Santa Rosa",
+      "brgy_name": "Tagapo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Asana (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Bacong-Sigsigan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Bagong Pag-Asa (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Balitoc"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Banaba (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Batuhan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Bulihan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Caballero (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Calumpang (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Cuebang Bato"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Damayan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Kapatalan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Kataypuanan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Liyang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Maate"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Magdalo (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Mayatba"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Minayutan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Salangbato"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Famy",
+      "brgy_name": "Tunhac"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Kalayaan",
+      "brgy_name": "Longos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Kalayaan",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Kalayaan",
+      "brgy_name": "San Juan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Bagong Anyo (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Bayate"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Bongkol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Bubukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Cabuyao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Calumpang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Culoy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Dagatan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Daniw (Danliw)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Dita"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ibabang Palina"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ibabang San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ibabang Sungi"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ibabang Taykin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ilayang Palina"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ilayang San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ilayang Sungi"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Ilayang Taykin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Kanlurang Bukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Laguan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Luquin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Malabo-Kalantukan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Masikap (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Maslun (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Mojon"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Novaliches"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Oples"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Pag-Asa (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Palayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Rizal (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Silangang Bukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Liliw",
+      "brgy_name": "Tuy-Baanan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Anos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Bagong Silang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Bambang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Batong Malake"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Baybayin (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Bayog"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Lalakay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Maahas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Malinta"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Mayondon"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Putho Tuntungin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Tadlak"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Los Baños",
+      "brgy_name": "Timugan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone I (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone II (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone III (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone IV (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone V (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone VI (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone VII (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Barangay Zone VIII (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "De La Paz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Buenaventura"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Diego"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Jose"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Juan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Luis"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Pablo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Pedro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Rafael"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "San Salvador"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Santo Domingo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Luisiana",
+      "brgy_name": "Santo Tomas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Bagong Silang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Balimbingan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Balubad"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Caliraya"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Concepcion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Lewin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Maracta (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Maytalang I"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Maytalang II"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Primera Parang (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Primera Pulo (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Salac (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Santo Niño (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Segunda Parang (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Segunda Pulo (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Lumban",
+      "brgy_name": "Wawa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Amuyong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Bayanihan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Lambac (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Libis ng Nayon (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Lucong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Maligaya (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Masikap (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Matalatala"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Nanguma"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Numero"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Paagahan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Pag-Asa (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "San Miguel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Mabitac",
+      "brgy_name": "Sinagtala (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Alipit"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Baanan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Balanac"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Bucal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Buenavista"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Bungkol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Buo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Burlungan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Cigaras"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Halayhayin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Ibabang Atingay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Ibabang Butnong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Ilayang Atingay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Ilayang Butnong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Ilog"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Malaking Ambling"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Malinao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Maravilla"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Munting Ambling"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Poblacion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Sabang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Salasad"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Tanawan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Magdalena",
+      "brgy_name": "Tipunan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Amonoy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Bakia"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Balanac"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Balayong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Banilad"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Banti"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Bitaoy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Botocan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Bukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Burgos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Burol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Coralao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Gagalot"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Ibabang Banga"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Ibabang Bayucain"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Ilayang Banga"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Ilayang Bayucain"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Isabang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Malinao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "May-It"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Munting Kawayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Olla"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Oobi"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Origuel (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Panalaban"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Pangil"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Panglan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Piit"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Pook"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Rizal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "San Francisco (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "San Miguel (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Santa Catalina (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Suba"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Talortor"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Tanawan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Taytay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Majayjay",
+      "brgy_name": "Villa Nogales"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Abo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Alibungbungan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Alumbrado"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Balayong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Balimbing"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Balinacon"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Bambang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Banago"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Banca-banca"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Bangcuro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Banilad"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Bayaquitos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Buboy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Buenavista"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Buhanginan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Bukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Bunga"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Cabuyew"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Calumpang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Kanluran Kabubuhayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Kanluran Lazaan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Labangan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Lagulo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Lawaguin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Maiit"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Malaya"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Malinao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Manaol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Maravilla"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Nagcalbang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Oples"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Palayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Palina"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Poblacion I (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Poblacion II (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Poblacion III (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Sabang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "San Francisco"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Santa Lucia"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Sibulan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Silangan Ilaya"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Silangan Kabubuhayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Silangan Lazaan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Silangan Napapatid"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Sinipian"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Sulsuguin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Talahib"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Talangan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Taytay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Tipacan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Wakat"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Nagcarlan",
+      "brgy_name": "Yukos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Bagumbayan (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Bangkusay (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Ermita (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Ibaba del Norte (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Ibaba del Sur (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Ilaya del Norte (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Ilaya del Sur (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Maytoong (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Quinale (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Paete",
+      "brgy_name": "Sierra Madre Mountains Forest Land under Jurisdiction of Paete, Laguna"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Anibong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Barangay I (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Barangay II (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Biñan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Buboy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Cabanbanan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Calusiche"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Dingin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Lambac"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Layugan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Magdapio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Maulawin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Pinagsanjan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Sabang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "Sampaloc"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pagsanjan",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Banilan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Baño (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Burgos (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Casa Real"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Casinsin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Dorado"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Gonzales (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Kabulusan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Matikiw"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Rizal (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Saray"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Taft (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pakil",
+      "brgy_name": "Tavera (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Balian"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Dambo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Galalan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Isla (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Mabato-Azufre"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Natividad (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "San Jose (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pangil",
+      "brgy_name": "Sulib"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Aplaya"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Bagong Pook"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Bukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Bulilan Norte (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Bulilan Sur (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Concepcion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Labuin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Linga"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Masico"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Mojon"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Pansol"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Pinagbayanan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "San Antonio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "San Miguel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Santa Clara Norte (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Santa Clara Sur (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Pila",
+      "brgy_name": "Tubuan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Antipolo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "East Poblacion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Entablado"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Laguan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Paule 1"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Paule 2"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Pook"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Tala"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Talaga"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "Tuy"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Rizal",
+      "brgy_name": "West Poblacion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Atisan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Bagong Bayan II-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Bagong Pook VI-C (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay I-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay I-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay II-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay II-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay II-C (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay II-D (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay II-E (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay II-F (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay III-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay III-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay III-C (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay III-D (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay III-E (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay III-F (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay IV-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay IV-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay IV-C (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay V-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay V-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay V-C (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay V-D (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VI-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VI-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VI-D (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VI-E (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VII-A (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VII-B (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VII-C (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VII-D (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Barangay VII-E (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Bautista"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Concepcion"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Del Remedio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Dolores"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Antonio 1"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Antonio 2"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Bartolome"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Buenaventura"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Crispin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Cristobal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Diego"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Francisco"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Gabriel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Gregorio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Ignacio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Isidro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Joaquin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Jose"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Juan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Lorenzo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Lucas 1"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Lucas 2"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Marcos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Mateo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Miguel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Nicolas"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Pedro"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Rafael"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Roque"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "San Vicente"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Ana"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Catalina"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Cruz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Elena"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Felomina"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Isabel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Maria"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Maria Magdalena"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Monica"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santa Veronica"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santiago I"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santiago II"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santisimo Rosario"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santo Angel"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santo Cristo"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Santo Niño"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "San Pablo City",
+      "brgy_name": "Soledad"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Alipit"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Bagumbayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Barangay I (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Barangay II (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Barangay III (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Barangay IV (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Barangay V (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Bubukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Calios"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Duhat"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Gatid"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Jasaan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Labuin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Malinao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Oogong"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Pagsawitan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Palasan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Patimbao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "San Jose"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "San Juan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "San Pablo Norte"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "San Pablo Sur"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Santisima Cruz"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Santo Angel Central"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Santo Angel Norte"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Cruz",
+      "brgy_name": "Santo Angel Sur"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Adia"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Bagong Pook"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Bagumbayan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Barangay I (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Barangay II (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Barangay III (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Barangay IV (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Bubukal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Cabooan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Calangay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Cambuja"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Coralan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Cueva"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Inayapan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Jose Laurel, Sr."
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Jose Rizal"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Kayhakat"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Macasipac"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Masinao"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Mataling-Ting"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Pao-o"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Parang Ng Buho"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Santiago"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Talangka"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Santa Maria",
+      "brgy_name": "Tungkod"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Acevida"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Bagong Pag-Asa (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Bagumbarangay (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Buhay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "G. Redor (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Gen. Luna"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Halayhayin"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "J. Rizal (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Kapatalan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Laguio"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Liyang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Llavac"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Macatad"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Magsaysay"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Mayatba"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Mendiola"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "P. Burgos"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Pandeno"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Salubungan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Siniloan",
+      "brgy_name": "Wawa"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "Banca-banca"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "Daniw"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "Masapang"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "Nanhaya (Pob.)"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "Pagalangan"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "San Benito"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "San Felix"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "San Francisco"
+    },
+    {
+      "prov_name": "Laguna",
+      "city_name": "Victoria",
+      "brgy_name": "San Roque (Pob.)"
+    }
+  ]
+}
