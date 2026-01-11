@@ -7,7 +7,8 @@ import { healthRouter } from "./routes/health.js";
 import { authRouter } from "./routes/auth.js";
 import { meRouter } from "./routes/me.js";
 import { formsRouter } from "./routes/forms.js";
-import { submissionsRouter } from "./routes/submissions.js"; // ✅ add this
+import { submissionsRouter } from "./routes/submissions.js";
+import { mySubmissionsRouter } from "./routes/mySubmissions.js";
 
 import { notFound, errorHandler } from "./middleware/errors.js";
 
@@ -15,10 +16,7 @@ const app = express();
 
 app.use(
   cors({
-    origin:
-      env.corsOrigin === "*"
-        ? true
-        : env.corsOrigin.split(",").map((s) => s.trim()),
+    origin: env.corsOrigin === "*" ? true : env.corsOrigin.split(",").map((s) => s.trim()),
     credentials: true,
   })
 );
@@ -30,7 +28,10 @@ app.use("/api", healthRouter);
 app.use("/api", authRouter);
 app.use("/api", meRouter);
 app.use("/api", formsRouter);
-app.use("/api", submissionsRouter); // ✅ add this
+app.use("/api", submissionsRouter);
+
+// ✅ same style as others
+app.use("/api", mySubmissionsRouter);
 
 app.use(notFound);
 app.use(errorHandler);
