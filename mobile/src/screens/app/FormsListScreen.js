@@ -361,8 +361,6 @@ export default function FormsListScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.title}>Forms</Text>
-
         <View style={styles.controls}>
           <View style={{ flex: 1 }}>
             <Text style={styles.label}>Search</Text>
