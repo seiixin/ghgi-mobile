@@ -6,7 +6,7 @@ import { theme } from "../../ui/theme";
 export default function WelcomeScreen({ navigation }) {
   return (
     <ImageBackground
-      source={require("../../../assets/bg.png")}
+      source={require("../../../assets/bg.jpg")}
       style={styles.bg}
       resizeMode="cover"
     >

@@ -5,7 +5,7 @@ import { theme } from "../../ui/theme";
 export default function AuthShell({ children }) {
   return (
     <ImageBackground
-      source={require("../../../assets/bg.png")}
+      source={require("../../../assets/bg.jpg")}
       style={styles.bg}
       resizeMode="cover"
     >
