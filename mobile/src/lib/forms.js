@@ -1,81 +1,98 @@
-import { getApiBaseUrl } from "./config";
-import { getTokens, saveTokens } from "./tokenStore";
-import { getOrCreateDeviceId } from "./deviceStore";
+// mobile/src/lib/forms.js
+import { BASE_URL } from "./config";
+import { getAccessToken } from "./tokenStore";
 
-/**
- * Read JSON if possible, else return { message: text }.
- */
-async function readJsonOrText(res) {
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return await res.json();
-  const t = await res.text();
-  return { message: t };
+function joinUrl(base, path) {
+  const b = String(base || "").replace(/\/+$/, "");
+  const p = String(path || "").replace(/^\/+/, "");
+  return `${b}/${p}`;
 }
 
-async function tryRefresh() {
-  const { refresh } = await getTokens();
-  if (!refresh) return false;
+async function authHeaders(extra = {}) {
+  const token = await getAccessToken();
+  const h = { ...extra };
+  if (token) h.Authorization = `Bearer ${token}`;
+  return h;
+}
 
-  const device_id = await getOrCreateDeviceId();
-  const base = getApiBaseUrl();
-
-  const res = await fetch(`${base}/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refresh, device_id }),
+async function getJson(path) {
+  const url = joinUrl(BASE_URL, path);
+  const res = await fetch(url, {
+    headers: await authHeaders({ Accept: "application/json" }),
   });
-
-  const data = await readJsonOrText(res).catch(() => ({}));
-  if (!res.ok) return false;
-
-  // backend returns: { access_token, refresh_token, expires_in }
-  await saveTokens(data);
-  return true;
+  const ct = res.headers?.get?.("content-type") || "";
+  const payload = ct.includes("application/json") ? await res.json() : { message: await res.text() };
+  if (!res.ok) throw new Error(payload?.message || "Request failed");
+  return payload?.data ?? payload;
 }
 
-async function authedGet(path) {
-  const base = getApiBaseUrl();
-  const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
-
-  const tokens = await getTokens();
-  const headers = { "Content-Type": "application/json" };
-  if (tokens.access) headers.Authorization = `Bearer ${tokens.access}`;
-
-  let res = await fetch(url, { method: "GET", headers });
-
-  // If access expired/invalid, attempt refresh then retry once.
-  if (res.status === 401) {
-    const refreshed = await tryRefresh();
-    if (refreshed) {
-      const tokens2 = await getTokens();
-      const headers2 = { "Content-Type": "application/json" };
-      if (tokens2.access) headers2.Authorization = `Bearer ${tokens2.access}`;
-      res = await fetch(url, { method: "GET", headers: headers2 });
-    }
-  }
-
-  const data = await readJsonOrText(res).catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || `Request failed (${res.status})`);
-  return data;
-}
-
-/**
- * GET /api/form-types
- * Response: { formTypes: [{ id, key, name, sector_key, description }] }
- */
-export async function fetchFormTypes() {
-  const data = await authedGet("/form-types");
-  const list = data?.formTypes ?? data?.data ?? data ?? [];
+function normalizeFormTypes(payload) {
+  const list =
+    (Array.isArray(payload) ? payload : null) ??
+    payload?.formTypes ??
+    payload?.data ??
+    payload?.data?.formTypes ??
+    [];
   return Array.isArray(list) ? list : [];
 }
 
-/**
- * GET /api/form-mappings?form_type_id=&year=
- * Response: { mapping: { id, form_type_id, year, mapping_json } }
- * mapping_json is returned as an object when possible.
- */
-export async function fetchFormMapping({ formTypeId, year }) {
-  const q = `form_type_id=${encodeURIComponent(String(formTypeId))}&year=${encodeURIComponent(String(year))}`;
-  const data = await authedGet(`/form-mappings?${q}`);
-  return data?.mapping ?? data;
+// EXISTING: list form types
+export async function fetchFormTypes() {
+  // Try a few likely endpoints
+  const tries = ["/forms", "/forms?active=all", "/forms?include=schema_versions"];
+  let lastErr = null;
+
+  for (const p of tries) {
+    try {
+      const data = await getJson(p);
+      const list = normalizeFormTypes(data);
+      if (list.length) return list;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+
+  if (lastErr) throw lastErr;
+  return [];
+}
+
+// NEW: fetch active schema for a single form type (fallback when schema_versions missing)
+export async function fetchActiveSchemaForFormType({ formTypeId, year }) {
+  // Try likely endpoints (adjust if your backend differs)
+  const y = year ? `?year=${encodeURIComponent(String(year))}` : "";
+  const tries = [
+    `/forms/${formTypeId}${y}`,
+    `/forms/${formTypeId}/schema${y}`,
+    `/forms/${formTypeId}/active-schema${y}`,
+  ];
+
+  let lastErr = null;
+  for (const p of tries) {
+    try {
+      const data = await getJson(p);
+
+      // normalize: could be {schema_version:{...}} OR {activeSchema:{...}} etc
+      const sv =
+        data?.schema_version ??
+        data?.schemaVersion ??
+        data?.active_schema ??
+        data?.activeSchema ??
+        data?.data?.schema_version ??
+        null;
+
+      if (sv?.schema_json || sv?.schemaJson) return sv;
+
+      // sometimes backend returns the form itself
+      const form = data?.form ?? data?.data?.form ?? data;
+      const versions = form?.schema_versions || form?.schemaVersions || [];
+      const list = Array.isArray(versions) ? versions : [];
+      const active = list.find((v) => v?.status === "active") || list[0] || null;
+      if (active?.schema_json || active?.schemaJson) return active;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+
+  if (lastErr) throw lastErr;
+  return null;
 }
