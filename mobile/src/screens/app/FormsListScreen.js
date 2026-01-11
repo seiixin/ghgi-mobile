@@ -1,5 +1,5 @@
 // mobile/src/screens/app/FormsListScreen.js
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,6 +20,21 @@ import {
   getCachedFormTypes,
   getCachedMappingJson,
 } from "../../lib/cacheStore";
+
+/**
+ * KEY FIXES (per advise)
+ * 1) DO NOT default to current year (2026) when DB has no such year.
+ *    - We only show years returned by fetchFormYears() (DB-derived).
+ *    - If years endpoint fails/empty: show "No years available" and block form answering.
+ *
+ * 2) Forms list is reloaded when selected year changes.
+ *
+ * 3) Badge shows (year|SELECTED_YEAR), not device year.
+ *
+ * REQUIRED BACKEND (recommended)
+ * - GET /form-years -> { years: [2023, ...] } from DISTINCT year in form_schema_versions and/or form_mappings.
+ * - GET /form-types?year=2023 should ideally return the schema_version_id/schema_json for that year (so FormAnswerScreen can render).
+ */
 
 function toYearNum(v) {
   const y = Number(String(v ?? "").trim());
@@ -45,21 +60,24 @@ function uniqSortedYears(arr) {
     const n = toYearNum(y);
     if (n) set.add(n);
   });
-  return Array.from(set).sort((a, b) => b - a); // desc (latest first)
+  return Array.from(set).sort((a, b) => b - a); // desc
 }
 
 function YearDropdown({ years, value, onChange }) {
   const [open, setOpen] = useState(false);
 
   const selectedLabel = value ? String(value) : "Select year";
+  const disabled = !Array.isArray(years) || years.length === 0;
 
   return (
     <>
-      <Pressable style={styles.yearDrop} onPress={() => setOpen(true)} disabled={!years?.length}>
+      <Pressable
+        style={[styles.yearDrop, disabled && styles.disabled]}
+        onPress={() => setOpen(true)}
+        disabled={disabled}
+      >
         <Text style={styles.yearDropLabel}>Year</Text>
-        <Text style={styles.yearDropValue}>
-          {selectedLabel} {years?.length ? "" : "(no years)"}
-        </Text>
+        <Text style={styles.yearDropValue}>{selectedLabel}</Text>
       </Pressable>
 
       <Modal visible={open} animationType="fade" transparent onRequestClose={() => setOpen(false)}>
@@ -80,9 +98,7 @@ function YearDropdown({ years, value, onChange }) {
                       setOpen(false);
                     }}
                   >
-                    <Text style={[styles.modalRowText, active && styles.modalRowTextActive]}>
-                      {item}
-                    </Text>
+                    <Text style={[styles.modalRowText, active && styles.modalRowTextActive]}>{item}</Text>
                   </Pressable>
                 );
               }}
@@ -99,25 +115,12 @@ function YearDropdown({ years, value, onChange }) {
   );
 }
 
-/**
- * TARGET UX:
- * - Search input (filters all forms)
- * - Year dropdown (only years that exist in DB)
- * - Each form shows badge like: (year|2023)
- * - Tap: open FormAnswer (pass year + formTypeId)
- * - Long press: download mapping cache for that year
- *
- * IMPORTANT:
- * To make schema fields load consistently in FormAnswerScreen,
- * forms API must be year-aware and return schema for that year.
- */
 export default function FormsListScreen({ navigation }) {
-  const currentYear = new Date().getFullYear();
-
   const [query, setQuery] = useState("");
-  const [year, setYear] = useState(currentYear);
 
-  const [availableYears, setAvailableYears] = useState([currentYear]);
+  // selected year must come from DB-derived list, not device year
+  const [availableYears, setAvailableYears] = useState([]);
+  const [year, setYear] = useState(null); // number or null
 
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -126,9 +129,7 @@ export default function FormsListScreen({ navigation }) {
   const [selectedId, setSelectedId] = useState(null);
   const [status, setStatus] = useState("");
 
-  const yearNum = useMemo(() => toYearNum(year) ?? currentYear, [year, currentYear]);
-
-  const queryDebounceRef = useRef(null);
+  const yearNum = useMemo(() => toYearNum(year), [year]);
 
   const filteredForms = useMemo(() => {
     const q = normalizeString(query);
@@ -145,33 +146,46 @@ export default function FormsListScreen({ navigation }) {
     });
   }, [formTypes, query]);
 
-  async function loadYearsFromApiOrFallback() {
-    // Preferred: backend endpoint that returns distinct years that exist (from form_schema_versions/form_mappings)
+  async function loadYears() {
+    setStatus("");
     try {
-      const years = await fetchFormYears?.();
+      const years = await fetchFormYears();
       const normalized = uniqSortedYears(years);
-      if (normalized.length) {
-        setAvailableYears(normalized);
 
-        // default year:
-        // - if current year exists -> keep it
-        // - else pick latest available
-        if (!normalized.includes(currentYear)) setYear(normalized[0]);
-        else setYear(currentYear);
+      setAvailableYears(normalized);
 
-        return normalized;
+      if (normalized.length === 0) {
+        setYear(null);
+        setFormTypes([]);
+        setStatus("No years available from database (form_mappings / form_schema_versions).");
+        return null;
       }
-    } catch {
-      // ignore, fallback below
-    }
 
-    // Fallback: keep current year only
-    setAvailableYears([currentYear]);
-    setYear(currentYear);
-    return [currentYear];
+      // default: latest available year
+      setYear((prev) => {
+        const prevNum = toYearNum(prev);
+        if (prevNum && normalized.includes(prevNum)) return prevNum;
+        return normalized[0];
+      });
+
+      return normalized[0];
+    } catch (e) {
+      // IMPORTANT: do not fallback to device year (this caused 2026)
+      setAvailableYears([]);
+      setYear(null);
+      setFormTypes([]);
+      setStatus(e?.message ? String(e.message) : "Failed to load years.");
+      return null;
+    }
   }
 
   async function loadForms({ showCachedFirst = true } = {}) {
+    // if no DB year selected, stop
+    if (!yearNum) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setStatus("");
 
@@ -185,23 +199,15 @@ export default function FormsListScreen({ navigation }) {
     }
 
     try {
-      const y = yearNum;
-
-      /**
-       * IMPORTANT: fetchFormTypes({year}) must call a year-aware API.
-       * If your current backend route is:
-       *   GET /form-types
-       * update it to:
-       *   GET /form-types?year=2023
-       * AND return schema_versions (or at least the active schema version) for that year.
-       */
-      const fresh = await fetchFormTypes({ year: y });
-
+      // IMPORTANT: fetchFormTypes({year}) must call a year-aware API
+      // e.g. GET /form-types?year=2023
+      const fresh = await fetchFormTypes({ year: yearNum });
       const list = Array.isArray(fresh) ? fresh : [];
+
       setFormTypes(list);
       await cacheFormTypes(list);
 
-      setStatus(list.length ? "" : "No forms found for selected year.");
+      if (!list.length) setStatus(`No forms found for (year|${yearNum}).`);
     } catch (e) {
       setStatus(e?.message ? String(e.message) : "Failed to load form types");
     } finally {
@@ -210,15 +216,18 @@ export default function FormsListScreen({ navigation }) {
   }
 
   async function refreshForms() {
+    if (!yearNum) return;
+
     setRefreshing(true);
     setStatus("");
+
     try {
-      const y = yearNum;
-      const fresh = await fetchFormTypes({ year: y });
+      const fresh = await fetchFormTypes({ year: yearNum });
       const list = Array.isArray(fresh) ? fresh : [];
       setFormTypes(list);
       await cacheFormTypes(list);
-      setStatus(list.length ? "" : "No forms found for selected year.");
+
+      if (!list.length) setStatus(`No forms found for (year|${yearNum}).`);
     } catch (e) {
       setStatus(e?.message ? String(e.message) : "Failed to refresh");
     } finally {
@@ -228,30 +237,27 @@ export default function FormsListScreen({ navigation }) {
 
   useEffect(() => {
     (async () => {
-      await loadYearsFromApiOrFallback();
-      await loadForms({ showCachedFirst: true });
+      setLoading(true);
+      const firstYear = await loadYears();
+      if (firstYear) {
+        // ensure yearNum is set before loading forms
+        setYear(firstYear);
+      }
+      setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // reload forms when year changes
+  // when year changes, reload forms
   useEffect(() => {
     if (!yearNum) return;
-    refreshForms();
+    loadForms({ showCachedFirst: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [yearNum]);
 
-  // purely client-side search; debounced just for smoother typing
-  useEffect(() => {
-    if (queryDebounceRef.current) clearTimeout(queryDebounceRef.current);
-    queryDebounceRef.current = setTimeout(() => {}, 120);
-    return () => clearTimeout(queryDebounceRef.current);
-  }, [query]);
-
   async function onDownloadMapping(item) {
-    const y = yearNum;
-    if (!y) {
-      Alert.alert("Invalid year", "Select a valid year.");
+    if (!yearNum) {
+      Alert.alert("Year required", "Select a year that exists in the database.");
       return;
     }
 
@@ -259,19 +265,19 @@ export default function FormsListScreen({ navigation }) {
     setStatus("Checking cache...");
 
     try {
-      const cached = await getCachedMappingJson({ formTypeId: item.id, year: y });
+      const cached = await getCachedMappingJson({ formTypeId: item.id, year: yearNum });
       if (cached) {
-        setStatus(`Cached mapping found for ${item.name} (year|${y}).`);
+        setStatus(`Cached mapping found for ${item.name} (year|${yearNum}).`);
         return;
       }
 
       setStatus("Downloading mapping...");
-      const mapping = await fetchFormMapping({ formTypeId: item.id, year: y });
+      const mapping = await fetchFormMapping({ formTypeId: item.id, year: yearNum });
 
       const mappingJson = mapping?.mapping_json ?? {};
-      await cacheMappingJson({ formTypeId: item.id, year: y, mappingJson });
+      await cacheMappingJson({ formTypeId: item.id, year: yearNum, mappingJson });
 
-      setStatus(`Downloaded and cached mapping for ${item.name} (year|${y}).`);
+      setStatus(`Downloaded and cached mapping for ${item.name} (year|${yearNum}).`);
     } catch (e) {
       setStatus(e?.message ? String(e.message) : "Failed to download mapping");
     } finally {
@@ -280,53 +286,51 @@ export default function FormsListScreen({ navigation }) {
   }
 
   function onAnswerForm(item) {
-    const y = yearNum;
-    if (!y) {
-      Alert.alert("Invalid year", "Select a valid year.");
+    if (!yearNum) {
+      Alert.alert("Year required", "Select a year that exists in the database.");
       return;
     }
-    navigation.navigate("FormAnswer", { formTypeId: item.id, year: y });
+    navigation.navigate("FormAnswer", { formTypeId: item.id, year: yearNum });
   }
 
-  const renderItem = ({ item }) => {
-    const y = yearNum;
-
-    return (
-      <Pressable
-        style={styles.card}
-        onPress={() => onAnswerForm(item)}
-        onLongPress={() => onDownloadMapping(item)}
-        delayLongPress={350}
-      >
-        <View style={{ flex: 1 }}>
-          <View style={styles.rowTop}>
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{`year|${y}`}</Text>
-            </View>
+  const renderItem = ({ item }) => (
+    <Pressable
+      style={styles.card}
+      onPress={() => onAnswerForm(item)}
+      onLongPress={() => onDownloadMapping(item)}
+      delayLongPress={350}
+      disabled={!yearNum}
+    >
+      <View style={{ flex: 1 }}>
+        <View style={styles.rowTop}>
+          <Text style={styles.cardTitle}>{item.name}</Text>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{yearNum ? `year|${yearNum}` : "year|—"}</Text>
           </View>
-
-          <Text style={styles.cardSub}>
-            {item.sector_key} • {item.key}
-          </Text>
-
-          {item.description ? (
-            <Text style={styles.cardDesc} numberOfLines={2}>
-              {item.description}
-            </Text>
-          ) : null}
-
-          <Text style={styles.cardHint} numberOfLines={1}>
-            Tap: Answer • Long-press: Download mapping cache
-          </Text>
         </View>
 
-        <View style={styles.right}>
-          {selectedId === item.id ? <ActivityIndicator /> : <Text style={styles.action}>Open</Text>}
-        </View>
-      </Pressable>
-    );
-  };
+        <Text style={styles.cardSub}>
+          {item.sector_key} • {item.key}
+        </Text>
+
+        {item.description ? (
+          <Text style={styles.cardDesc} numberOfLines={2}>
+            {item.description}
+          </Text>
+        ) : null}
+
+        <Text style={styles.cardHint} numberOfLines={1}>
+          Tap: Answer • Long-press: Download mapping cache
+        </Text>
+
+        {!yearNum ? <Text style={styles.warn}>Select a DB year first.</Text> : null}
+      </View>
+
+      <View style={styles.right}>
+        {selectedId === item.id ? <ActivityIndicator /> : <Text style={styles.action}>Open</Text>}
+      </View>
+    </Pressable>
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -354,7 +358,7 @@ export default function FormsListScreen({ navigation }) {
           <Pressable
             onPress={refreshForms}
             style={({ pressed }) => [styles.refreshBtn, pressed && styles.pressed]}
-            disabled={refreshing}
+            disabled={refreshing || !yearNum}
           >
             <Text style={styles.refreshText}>{refreshing ? "Refreshing..." : "Refresh"}</Text>
           </Pressable>
@@ -363,9 +367,7 @@ export default function FormsListScreen({ navigation }) {
             onPress={async () => {
               setQuery("");
               setStatus("Reloading years...");
-              await loadYearsFromApiOrFallback();
-              await refreshForms();
-              setStatus("");
+              await loadYears();
             }}
             style={({ pressed }) => [styles.refreshBtn, pressed && styles.pressed]}
             disabled={refreshing}
@@ -380,7 +382,14 @@ export default function FormsListScreen({ navigation }) {
       {loading ? (
         <View style={styles.loading}>
           <ActivityIndicator />
-          <Text style={styles.loadingText}>Loading form types...</Text>
+          <Text style={styles.loadingText}>Loading…</Text>
+        </View>
+      ) : !yearNum ? (
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>No year selected</Text>
+          <Text style={styles.emptySub}>
+            Years must come from DB (form_mappings.year / form_schema_versions.year). Add /form-years endpoint or fix it.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -391,9 +400,7 @@ export default function FormsListScreen({ navigation }) {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyTitle}>No forms found</Text>
-              <Text style={styles.emptySub}>
-                Try changing year or clearing search.
-              </Text>
+              <Text style={styles.emptySub}>Try changing year or clearing search.</Text>
             </View>
           }
         />
@@ -401,27 +408,6 @@ export default function FormsListScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
-/**
- * WHICH API SHOULD BE MODIFIED (to fix "No schema fields loaded for this form/year")?
- *
- * 1) Preferred NEW endpoint:
- *    GET /form-years
- *    -> returns distinct years that exist in DB (based on form_schema_versions and/or form_mappings)
- *    Example response:
- *      { "years": [2023, 2024, 2025] }
- *
- * 2) Modify existing forms list endpoint:
- *    GET /form-types?year=2023
- *    -> return form types PLUS the active schema version for that year (including schema_version_id + schema_json).
- *    Example per form row:
- *      {
- *        id, key, name, sector_key, description,
- *        active_schema: { id, year, version, schema_json, ui_json, status }
- *      }
- *
- * If you do #2, FormAnswerScreen can always render fields without guessing.
- */
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
@@ -454,6 +440,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#fff",
   },
+
+  disabled: { opacity: 0.55 },
+
   yearDropLabel: { fontSize: 11, color: "#666" },
   yearDropValue: { marginTop: 2, fontSize: 14, fontWeight: "700", color: "#111" },
 
@@ -500,6 +489,7 @@ const styles = StyleSheet.create({
   cardSub: { marginTop: 6, fontSize: 12, color: "#666" },
   cardDesc: { marginTop: 8, fontSize: 12, color: "#444" },
   cardHint: { marginTop: 10, fontSize: 11, color: "#888" },
+  warn: { marginTop: 8, fontSize: 11, color: "#b45309", fontWeight: "700" },
 
   right: { alignItems: "flex-end", justifyContent: "center" },
   action: { fontSize: 13, fontWeight: "700", color: "#111" },

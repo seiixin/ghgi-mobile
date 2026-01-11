@@ -75,6 +75,34 @@ function safeJsonParse(str) {
   }
 }
 
+// backend/src/routes/forms.js
+formsRouter.get("/form-years", requireAuth, async (req, res, next) => {
+  try {
+    // priority: schema_versions years (since schema drives fields)
+    // fallback: mapping years
+    const [rows] = await pool.execute(
+      `
+      SELECT DISTINCT year
+      FROM form_schema_versions
+      WHERE status IN ('active','inactive','draft')  -- adjust if needed
+      UNION
+      SELECT DISTINCT year
+      FROM form_mappings
+      ORDER BY year DESC
+      `
+    );
+
+    const years = (rows || [])
+      .map((r) => Number(r.year))
+      .filter((y) => Number.isFinite(y) && y >= 1900 && y <= 3000);
+
+    return res.json({ years });
+  } catch (e) {
+    return next(e);
+  }
+});
+
+
 /**
  * GET /api/form-mappings?form_type_id=&year=
  * (unchanged)

@@ -1,9 +1,13 @@
 // mobile/src/lib/submissionsApi.js
 // Submissions API (mobile answering)
-// Uses fetch directly to avoid apiFetch export mismatch issues.
+// Uses fetch directly (no apiFetch dependency).
+// - Adds robust JSON/text parsing (avoids "res.text is not a function" edge cases)
+// - Supports tokenStore being async or sync
+// - Throws rich errors (status + details)
+// - Works with backend format { status, message, data } OR plain payloads
 
 import { BASE_URL } from "./config";
-import { getAccessToken } from "./tokenStore";
+import * as tokenStore from "./tokenStore";
 
 function joinUrl(base, path) {
   const b = String(base || "").replace(/\/+$/, "");
@@ -11,12 +15,76 @@ function joinUrl(base, path) {
   return `${b}/${p}`;
 }
 
+async function safeGetToken() {
+  try {
+    const fn =
+      typeof tokenStore?.getAccessToken === "function"
+        ? tokenStore.getAccessToken
+        : typeof tokenStore?.default?.getAccessToken === "function"
+        ? tokenStore.default.getAccessToken
+        : null;
+
+    if (!fn) return null;
+
+    const v = fn();
+    return typeof v?.then === "function" ? await v : v;
+  } catch {
+    return null;
+  }
+}
+
 async function authHeaders(extra = {}) {
-  // tokenStore may be async (most RN storage is)
-  const token = await getAccessToken();
+  const token = await safeGetToken();
   const h = { ...extra };
   if (token) h.Authorization = `Bearer ${token}`;
   return h;
+}
+
+function isFetchResponse(x) {
+  return !!x && typeof x === "object" && typeof x.json === "function";
+}
+
+async function readPayload(res) {
+  // Normal fetch Response
+  if (isFetchResponse(res)) {
+    const ct = res.headers?.get?.("content-type") || "";
+    if (ct.includes("application/json")) {
+      try {
+        return await res.json();
+      } catch {
+        return {};
+      }
+    }
+
+    if (typeof res.text === "function") {
+      try {
+        const t = await res.text();
+        return { message: t };
+      } catch {
+        return {};
+      }
+    }
+
+    return {};
+  }
+
+  // If some wrapper returned already-parsed payload
+  return res ?? {};
+}
+
+function unwrapData(payload) {
+  // backend: { status, message, data }
+  return payload?.data ?? payload;
+}
+
+function pickErrorMessage(payload) {
+  return (
+    payload?.message ||
+    payload?.error?.message ||
+    payload?.error ||
+    payload?.status?.message ||
+    "Request failed"
+  );
 }
 
 async function requestJson(path, { method = "GET", body = undefined, headers = {} } = {}) {
@@ -34,19 +102,16 @@ async function requestJson(path, { method = "GET", body = undefined, headers = {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
-  const ct = res.headers?.get?.("content-type") || "";
-  const payload = ct.includes("application/json") ? await res.json() : { message: await res.text() };
+  const payload = await readPayload(res);
 
   if (!res.ok) {
-    const msg = payload?.message || payload?.error || "Request failed";
-    const err = new Error(msg);
+    const err = new Error(pickErrorMessage(payload));
     err.status = res.status;
     err.details = payload?.details ?? payload ?? null;
     throw err;
   }
 
-  // backend format: { status, message, data }
-  return payload?.data ?? payload;
+  return unwrapData(payload);
 }
 
 export async function createSubmission({
@@ -62,9 +127,9 @@ export async function createSubmission({
   return await requestJson("/submissions", {
     method: "POST",
     body: {
-      form_type_id,
-      year,
-      schema_version_id,
+      form_type_id: Number(form_type_id),
+      year: Number(year),
+      schema_version_id: schema_version_id === null ? null : Number(schema_version_id),
       source,
       reg_name,
       prov_name,
@@ -88,9 +153,10 @@ export async function saveSubmissionAnswers(
     brgy_name,
   } = {}
 ) {
-  const loc = location && typeof location === "object"
-    ? location
-    : { reg_name, prov_name, city_name, brgy_name };
+  const loc =
+    location && typeof location === "object"
+      ? location
+      : { reg_name, prov_name, city_name, brgy_name };
 
   return await requestJson(`/submissions/${submissionId}/answers`, {
     method: "PUT",
@@ -106,6 +172,7 @@ export async function saveSubmissionAnswers(
 export async function submitSubmission(submissionId) {
   return await requestJson(`/submissions/${submissionId}/submit`, {
     method: "POST",
+    body: undefined,
   });
 }
 

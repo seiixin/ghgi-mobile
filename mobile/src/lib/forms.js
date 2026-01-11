@@ -1,98 +1,177 @@
 // mobile/src/lib/forms.js
-import { BASE_URL } from "./config";
-import { getAccessToken } from "./tokenStore";
+// Fix: support apiFetch returning either:
+// 1) native fetch Response
+// 2) already-parsed JSON payload
+// 3) wrapper object { ok, status, data/message/... }
 
-function joinUrl(base, path) {
-  const b = String(base || "").replace(/\/+$/, "");
-  const p = String(path || "").replace(/^\/+/, "");
-  return `${b}/${p}`;
+import { apiFetch } from "./api";
+
+function isFetchResponse(x) {
+  return !!x && typeof x === "object" && typeof x.json === "function" && typeof x.headers?.get === "function";
 }
 
-async function authHeaders(extra = {}) {
-  const token = await getAccessToken();
-  const h = { ...extra };
-  if (token) h.Authorization = `Bearer ${token}`;
-  return h;
-}
+async function safeReadPayload(resOrPayload) {
+  // Case A: apiFetch returned a native Response
+  if (isFetchResponse(resOrPayload)) {
+    const res = resOrPayload;
+    const ct = res.headers?.get?.("content-type") || "";
+    if (ct.includes("application/json")) return await res.json();
+    // RN Response usually has text(); but guard anyway
+    if (typeof res.text === "function") return { message: await res.text() };
+    return { message: "Non-JSON response" };
+  }
 
-async function getJson(path) {
-  const url = joinUrl(BASE_URL, path);
-  const res = await fetch(url, {
-    headers: await authHeaders({ Accept: "application/json" }),
-  });
-  const ct = res.headers?.get?.("content-type") || "";
-  const payload = ct.includes("application/json") ? await res.json() : { message: await res.text() };
-  if (!res.ok) throw new Error(payload?.message || "Request failed");
-  return payload?.data ?? payload;
-}
-
-function normalizeFormTypes(payload) {
-  const list =
-    (Array.isArray(payload) ? payload : null) ??
-    payload?.formTypes ??
-    payload?.data ??
-    payload?.data?.formTypes ??
-    [];
-  return Array.isArray(list) ? list : [];
-}
-
-// EXISTING: list form types
-export async function fetchFormTypes() {
-  // Try a few likely endpoints
-  const tries = ["/forms", "/forms?active=all", "/forms?include=schema_versions"];
-  let lastErr = null;
-
-  for (const p of tries) {
+  // Case B: apiFetch returned parsed payload already (object/string/etc.)
+  if (typeof resOrPayload === "string") {
+    // sometimes apiFetch returns raw text
     try {
-      const data = await getJson(p);
-      const list = normalizeFormTypes(data);
-      if (list.length) return list;
-    } catch (e) {
-      lastErr = e;
+      return JSON.parse(resOrPayload);
+    } catch {
+      return { message: resOrPayload };
     }
   }
 
-  if (lastErr) throw lastErr;
-  return [];
+  // plain object payload
+  return resOrPayload ?? {};
 }
 
-// NEW: fetch active schema for a single form type (fallback when schema_versions missing)
-export async function fetchActiveSchemaForFormType({ formTypeId, year }) {
-  // Try likely endpoints (adjust if your backend differs)
-  const y = year ? `?year=${encodeURIComponent(String(year))}` : "";
-  const tries = [
-    `/forms/${formTypeId}${y}`,
-    `/forms/${formTypeId}/schema${y}`,
-    `/forms/${formTypeId}/active-schema${y}`,
-  ];
+function getOk(resOrPayload, payload) {
+  // If native Response
+  if (isFetchResponse(resOrPayload)) return !!resOrPayload.ok;
 
-  let lastErr = null;
-  for (const p of tries) {
+  // If wrapper with ok
+  if (resOrPayload && typeof resOrPayload === "object" && typeof resOrPayload.ok === "boolean") {
+    return resOrPayload.ok;
+  }
+
+  // If payload contains status/error conventions
+  // Treat as OK unless it has obvious error markers
+  if (payload && typeof payload === "object") {
+    if (payload.status === "error") return false;
+    if (payload.error) return false;
+  }
+  return true;
+}
+
+function getStatus(resOrPayload) {
+  if (isFetchResponse(resOrPayload)) return resOrPayload.status ?? 0;
+  if (resOrPayload && typeof resOrPayload === "object" && typeof resOrPayload.status === "number") return resOrPayload.status;
+  return 0;
+}
+
+function pick(obj, paths, fallback = undefined) {
+  for (const p of paths) {
+    const parts = String(p).split(".");
+    let cur = obj;
+    let ok = true;
+    for (const k of parts) {
+      if (cur && Object.prototype.hasOwnProperty.call(cur, k)) cur = cur[k];
+      else {
+        ok = false;
+        break;
+      }
+    }
+    if (ok && cur !== undefined) return cur;
+  }
+  return fallback;
+}
+
+function normalizeArray(v) {
+  return Array.isArray(v) ? v : [];
+}
+
+function toYearNum(v) {
+  const y = Number(String(v ?? "").trim());
+  if (!Number.isFinite(y)) return null;
+  const n = Math.trunc(y);
+  if (n < 1900 || n > 3000) return null;
+  return n;
+}
+
+/**
+ * GET /form-years
+ * expected:
+ *  - { years:[2023,2024] }
+ *  - { data:{ years:[...] } }
+ *
+ * If endpoint is missing (404), this will throw with a clean message.
+ */
+export async function fetchFormYears() {
+  const res = await apiFetch("/form-years", { method: "GET" });
+  const payload = await safeReadPayload(res);
+  const ok = getOk(res, payload);
+
+  if (!ok) {
+    const msg =
+      pick(payload, ["message", "error.message"], null) ||
+      `Failed to fetch years (status ${getStatus(res) || "?"})`;
+    throw new Error(msg);
+  }
+
+  const years = pick(payload, ["years", "data.years"], []);
+  return normalizeArray(years).map(toYearNum).filter(Boolean);
+}
+
+/**
+ * GET /form-types?year=YYYY
+ * expected:
+ *  - { formTypes:[...] }
+ *  - { data:{ formTypes:[...] } }
+ */
+export async function fetchFormTypes({ year } = {}) {
+  const y = toYearNum(year);
+  const qs = y ? `?year=${encodeURIComponent(String(y))}` : "";
+  const res = await apiFetch(`/form-types${qs}`, { method: "GET" });
+  const payload = await safeReadPayload(res);
+  const ok = getOk(res, payload);
+
+  if (!ok) {
+    const msg =
+      pick(payload, ["message", "error.message"], null) ||
+      `Failed to fetch form types (status ${getStatus(res) || "?"})`;
+    throw new Error(msg);
+  }
+
+  const list = pick(payload, ["formTypes", "data.formTypes", "data", "rows"], []);
+  return normalizeArray(list);
+}
+
+/**
+ * GET /form-mappings?form_type_id=&year=
+ * expected:
+ *  - { mapping:{ id, form_type_id, year, mapping_json } }
+ *  - { data:{ mapping:{...} } }
+ */
+export async function fetchFormMapping({ formTypeId, year }) {
+  const ft = Number(formTypeId);
+  const y = toYearNum(year);
+
+  if (!Number.isFinite(ft) || ft <= 0) throw new Error("formTypeId is required");
+  if (!y) throw new Error("year is required");
+
+  const qs = `?form_type_id=${encodeURIComponent(String(ft))}&year=${encodeURIComponent(String(y))}`;
+  const res = await apiFetch(`/form-mappings${qs}`, { method: "GET" });
+  const payload = await safeReadPayload(res);
+  const ok = getOk(res, payload);
+
+  if (!ok) {
+    const msg =
+      pick(payload, ["message", "error.message"], null) ||
+      `Failed to fetch mapping (status ${getStatus(res) || "?"})`;
+    throw new Error(msg);
+  }
+
+  const mapping = pick(payload, ["mapping", "data.mapping"], null);
+  if (!mapping) return null;
+
+  let mappingJson = mapping.mapping_json ?? mapping.mappingJson ?? {};
+  if (typeof mappingJson === "string") {
     try {
-      const data = await getJson(p);
-
-      // normalize: could be {schema_version:{...}} OR {activeSchema:{...}} etc
-      const sv =
-        data?.schema_version ??
-        data?.schemaVersion ??
-        data?.active_schema ??
-        data?.activeSchema ??
-        data?.data?.schema_version ??
-        null;
-
-      if (sv?.schema_json || sv?.schemaJson) return sv;
-
-      // sometimes backend returns the form itself
-      const form = data?.form ?? data?.data?.form ?? data;
-      const versions = form?.schema_versions || form?.schemaVersions || [];
-      const list = Array.isArray(versions) ? versions : [];
-      const active = list.find((v) => v?.status === "active") || list[0] || null;
-      if (active?.schema_json || active?.schemaJson) return active;
-    } catch (e) {
-      lastErr = e;
+      mappingJson = JSON.parse(mappingJson);
+    } catch {
+      mappingJson = {};
     }
   }
 
-  if (lastErr) throw lastErr;
-  return null;
+  return { ...mapping, mapping_json: mappingJson };
 }

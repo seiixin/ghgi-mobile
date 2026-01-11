@@ -11,10 +11,22 @@ import {
   View,
 } from "react-native";
 
-import { fetchFormTypes, fetchActiveSchemaForFormType } from "../../lib/forms";
+import {
+  fetchActiveSchemaForFormType,
+  fetchFormMapping,
+  fetchFormTypes,
+} from "../../lib/forms";
+import {
+  cacheMappingJson,
+  getCachedMappingJson,
+} from "../../lib/cacheStore";
 import LocationPicker from "../../ui/LocationPicker";
 import SchemaFormRenderer from "../../ui/SchemaFormRenderer";
-import { createSubmission, saveSubmissionAnswers, submitSubmission } from "../../lib/submissionsApi";
+import {
+  createSubmission,
+  saveSubmissionAnswers,
+  submitSubmission,
+} from "../../lib/submissionsApi";
 
 /**
  * WIRED FLOW (mobile):
@@ -22,6 +34,7 @@ import { createSubmission, saveSubmissionAnswers, submitSubmission } from "../..
  * 2) FormAnswerScreen loads:
  *    - formType row
  *    - active schema (from list OR fallback endpoint)
+ *    - mapping_json (dropdown options) from cache OR endpoint
  * 3) User selects location + answers fields
  * 4) Save Draft:
  *    - ensureSubmission() => POST /submissions
@@ -79,17 +92,38 @@ function buildSnapshotsFromSchema(schemaJson) {
       label: f.label ?? f.key,
       type: f.type ?? "text",
       required: !!f.required,
-      option_key: null,
+      // keep these for select-like fields; renderer can fill labels later
+      option_key: f.option_key ?? f.optionKey ?? null,
       option_label: null,
     };
   }
   return meta;
 }
 
+function normalizeMappingJson(raw) {
+  // mapping_json can be object or stringified JSON
+  if (!raw) return {};
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  if (typeof raw === "object") return raw;
+  return {};
+}
+
 export default function FormAnswerScreen({ route, navigation }) {
   const { formTypeId, year: initialYear } = route.params || {};
 
-  const yearToSend = useMemo(() => toYearNum(initialYear) ?? new Date().getFullYear(), [initialYear]);
+  // IMPORTANT: year should already be DB-derived from FormsListScreen.
+  // We keep a safe fallback to device year if route param missing.
+  const yearToSend = useMemo(
+    () => toYearNum(initialYear) ?? new Date().getFullYear(),
+    [initialYear]
+  );
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -99,6 +133,9 @@ export default function FormAnswerScreen({ route, navigation }) {
 
   const [schemaJson, setSchemaJson] = useState(null);
   const [schemaVersionId, setSchemaVersionId] = useState(null);
+
+  // NEW: mapping_json (dropdown options)
+  const [mappingJson, setMappingJson] = useState({});
 
   const [submission, setSubmission] = useState(null);
 
@@ -128,6 +165,44 @@ export default function FormAnswerScreen({ route, navigation }) {
     [location]
   );
 
+  const loadMappingJson = useCallback(
+    async ({ formTypeIdNum, yearNum }) => {
+      // Try cache first, then endpoint, then cache it.
+      try {
+        const cached = await getCachedMappingJson({
+          formTypeId: formTypeIdNum,
+          year: yearNum,
+        });
+
+        if (cached) {
+          setMappingJson(normalizeMappingJson(cached));
+          return { ok: true, source: "cache" };
+        }
+
+        const mapping = await fetchFormMapping({
+          formTypeId: formTypeIdNum,
+          year: yearNum,
+        });
+
+        const mj = normalizeMappingJson(mapping?.mapping_json ?? mapping?.mappingJson ?? {});
+        setMappingJson(mj);
+
+        await cacheMappingJson({
+          formTypeId: formTypeIdNum,
+          year: yearNum,
+          mappingJson: mj,
+        });
+
+        return { ok: true, source: "network" };
+      } catch (e) {
+        // keep empty mapping; renderer can still show non-select fields
+        setMappingJson({});
+        return { ok: false, error: e };
+      }
+    },
+    []
+  );
+
   const load = useCallback(async () => {
     setLoading(true);
     setStatus("");
@@ -135,24 +210,26 @@ export default function FormAnswerScreen({ route, navigation }) {
     try {
       if (!formTypeId) throw new Error("Missing formTypeId");
 
-      // IMPORTANT:
-      // fetchFormTypes should include schema_versions for the requested year.
-      // If your backend supports it, implement fetchFormTypes({ year }) to call:
-      // GET /api/form-types?year=YYYY  (or whatever your backend expects)
-      const forms = await fetchFormTypes({ year: yearToSend });
+      const formTypeIdNum = Number(formTypeId);
+      const yearNum = Number(yearToSend);
+
+      // 1) load form list (year-aware)
+      const forms = await fetchFormTypes({ year: yearNum });
       const f = (forms || []).find((x) => String(x.id) === String(formTypeId));
       if (!f) throw new Error("Form not found");
-
       setForm(f);
 
-      // 1) try schema from the form list response
+      // 2) resolve schemaJson + schemaVersionId
       let { schemaJson: sj, schemaVersionId: svid } = extractSchemaFromForm(f);
       sj = normalizeSchemaJson(sj);
 
-      // 2) fallback: fetch active schema endpoint (per-year)
       if (!sj || !svid) {
         setStatus("Loading schema...");
-        const sv = await fetchActiveSchemaForFormType({ formTypeId: Number(formTypeId), year: yearToSend });
+        const sv = await fetchActiveSchemaForFormType({
+          formTypeId: formTypeIdNum,
+          year: yearNum,
+        });
+
         const svSchema = normalizeSchemaJson(sv?.schema_json ?? sv?.schemaJson ?? null);
         const svId = sv?.id ?? null;
 
@@ -163,18 +240,26 @@ export default function FormAnswerScreen({ route, navigation }) {
       setSchemaJson(sj);
       setSchemaVersionId(svid);
 
-      // ensure we always have snapshots for upsert (labels/types)
-      // (SchemaFormRenderer can still update snapshots as user interacts)
+      // 3) ensure snapshots baseline (labels/types) for backend upsert
       setSnapshots((prev) => {
         const base = buildSnapshotsFromSchema(sj);
-        // keep any previously captured option labels, etc.
         return { ...base, ...prev };
       });
 
+      // 4) NEW: load mapping_json (dropdown options)
+      setStatus((prev) => prev || "Loading options...");
+      const mapRes = await loadMappingJson({ formTypeIdNum, yearNum });
+
+      // 5) show state messages
       if (!sj || !Array.isArray(sj?.fields) || sj.fields.length === 0) {
         setStatus("Schema missing / no fields returned for this form + year.");
       } else if (!svid) {
-        setStatus("Schema loaded, but schema_version_id missing. Forms schema endpoint must return schema version id.");
+        setStatus(
+          "Schema loaded, but schema_version_id missing. Forms schema endpoint must return schema version id."
+        );
+      } else if (!mapRes.ok) {
+        // Not fatal; but user needs this to see dropdown options.
+        setStatus("Schema loaded. Options not loaded (mapping_json missing). Long-press form in list to cache mapping or fix endpoint.");
       } else {
         setStatus("");
       }
@@ -182,11 +267,12 @@ export default function FormAnswerScreen({ route, navigation }) {
       setForm(null);
       setSchemaJson(null);
       setSchemaVersionId(null);
+      setMappingJson({});
       setStatus(e?.message ? String(e.message) : "Failed to load form");
     } finally {
       setLoading(false);
     }
-  }, [formTypeId, yearToSend]);
+  }, [formTypeId, yearToSend, loadMappingJson]);
 
   useEffect(() => {
     load();
@@ -201,11 +287,11 @@ export default function FormAnswerScreen({ route, navigation }) {
       return null;
     }
 
-    // If your backend requires schema_version_id, keep this strict.
-    // If backend no longer requires it (because you already know schema_version_id=1 in your Postman test),
-    // you can remove this guard.
     if (!schemaVersionId) {
-      Alert.alert("Schema missing", "No schema_version_id found. Check forms schema response for the selected year.");
+      Alert.alert(
+        "Schema missing",
+        "No schema_version_id found. Check forms schema response for the selected year."
+      );
       return null;
     }
 
@@ -224,8 +310,6 @@ export default function FormAnswerScreen({ route, navigation }) {
         brgy_name: location.brgy_name || null,
       });
 
-      // createSubmission returns payload.data (from apiFetchJson)
-      // backend data: { submission, mapping_json }
       const s = created?.submission ?? created?.data?.submission ?? null;
       if (!s?.id) throw new Error("Create succeeded but missing submission id");
 
@@ -290,7 +374,6 @@ export default function FormAnswerScreen({ route, navigation }) {
     setStatus("Submitting...");
 
     try {
-      // 1) save answers first (mode=submit) -> backend validates location for submit-mode too
       await saveSubmissionAnswers(sub.id, {
         mode: "submit",
         answers,
@@ -301,7 +384,6 @@ export default function FormAnswerScreen({ route, navigation }) {
         brgy_name: location.brgy_name || null,
       });
 
-      // 2) then submit
       await submitSubmission(sub.id);
 
       setStatus("Submitted");
@@ -313,6 +395,9 @@ export default function FormAnswerScreen({ route, navigation }) {
       setBusy(false);
     }
   }
+
+  const debugFieldsCount = normalizeSchemaJson(schemaJson)?.fields?.length ?? 0;
+  const debugMappingKeysCount = Object.keys(mappingJson || {}).length;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -344,9 +429,7 @@ export default function FormAnswerScreen({ route, navigation }) {
 
             {!canRenderFields ? (
               <View style={{ paddingVertical: 10 }}>
-                <Text style={styles.muted}>
-                  No schema fields loaded for this form/year.
-                </Text>
+                <Text style={styles.muted}>No schema fields loaded for this form/year.</Text>
                 <Text style={styles.mutedSmall}>
                   Expected: forms API returns schema_versions OR fallback endpoint returns schema_json + id.
                 </Text>
@@ -354,6 +437,7 @@ export default function FormAnswerScreen({ route, navigation }) {
             ) : (
               <SchemaFormRenderer
                 schemaJson={schemaJson}
+                mappingJson={mappingJson} // ✅ NEW: enables dropdowns from mapping_json
                 answers={answers}
                 onChangeAnswers={setAnswers}
                 snapshots={snapshots}
@@ -368,7 +452,9 @@ export default function FormAnswerScreen({ route, navigation }) {
               disabled={busy}
               onPress={onSaveDraft}
             >
-              <Text style={styles.btnTextOutline}>{busy ? "Please wait..." : "Save Draft"}</Text>
+              <Text style={styles.btnTextOutline}>
+                {busy ? "Please wait..." : "Save Draft"}
+              </Text>
             </Pressable>
 
             <Pressable
@@ -376,19 +462,23 @@ export default function FormAnswerScreen({ route, navigation }) {
               disabled={busy}
               onPress={onSubmit}
             >
-              <Text style={styles.btnTextPrimary}>{busy ? "Please wait..." : "Submit"}</Text>
+              <Text style={styles.btnTextPrimary}>
+                {busy ? "Please wait..." : "Submit"}
+              </Text>
             </Pressable>
           </View>
 
           {submission?.id ? (
             <Text style={styles.muted}>Submission ID: #{submission.id}</Text>
           ) : (
-            <Text style={styles.muted}>No submission created yet (auto-create on first save/submit).</Text>
+            <Text style={styles.muted}>
+              No submission created yet (auto-create on first save/submit).
+            </Text>
           )}
 
           <Text style={styles.debug}>
             schema_version_id: {schemaVersionId ? String(schemaVersionId) : "null"} • fields:{" "}
-            {normalizeSchemaJson(schemaJson)?.fields?.length ?? 0}
+            {debugFieldsCount} • mapping_keys: {debugMappingKeysCount}
           </Text>
         </ScrollView>
       )}

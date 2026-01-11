@@ -31,3 +31,22 @@ export async function isAccessExpired() {
   if (!expiresAt) return true;
   return Date.now() > (expiresAt - 15_000);
 }
+
+export async function getAccessToken() {
+  const t = await getTokens();
+  return t?.access || null;
+}
+
+export async function getRefreshToken() {
+  const t = await getTokens();
+  return t?.refresh || null;
+}
+
+export default {
+  saveTokens,
+  getTokens,
+  clearTokens,
+  isAccessExpired,
+  getAccessToken,
+  getRefreshToken,
+};
