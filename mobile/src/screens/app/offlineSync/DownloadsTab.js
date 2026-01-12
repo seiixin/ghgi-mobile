@@ -23,17 +23,6 @@ import {
 
 import { fetchFormTypes, fetchFormYears } from "../../../lib/forms";
 
-// ✅ FIX: support BOTH default export and named export (prevents "got: undefined")
-import * as DownloadedFormsListMod from "../offline/DownloadedFormsList";
-const DownloadedFormsList =
-  DownloadedFormsListMod?.DownloadedFormsList ?? DownloadedFormsListMod?.default;
-
-if (!DownloadedFormsList) {
-  throw new Error(
-    "DownloadedFormsList is undefined. Check ../offline/DownloadedFormsList export (default vs named)."
-  );
-}
-
 function toYearNum(v) {
   const y = Number(String(v ?? "").trim());
   if (!Number.isFinite(y)) return null;
@@ -95,13 +84,21 @@ function pickBestSchemaVersion(form) {
 function extractErrMessage(e) {
   if (!e) return "Unknown error";
   if (typeof e === "string") return e;
-  if (e?.message) return convince(e.message);
-  return String(e);
+  if (e?.message) return String(e.message);
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
 }
-function convince(msg){ return String(msg); }
 
-function formTitle(f) {
-  return normalizeString(f?.name) || normalizeString(f?.title) || normalizeString(f?.key) || `Form ${f?.id}`;
+function formTypeDisplayName(ft) {
+  return (
+    normalizeString(ft?.name) ||
+    normalizeString(ft?.title) ||
+    normalizeString(ft?.key) ||
+    (ft?.id ? `Form Type ${ft.id}` : "Form")
+  );
 }
 
 function YearDropdown({ years, value, onChange }) {
@@ -120,6 +117,7 @@ function YearDropdown({ years, value, onChange }) {
         <Pressable style={styles.modalOverlay} onPress={() => setOpen(false)}>
           <Pressable style={styles.modalCard} onPress={() => {}}>
             <Text style={styles.modalTitle}>Select Year</Text>
+
             <FlatList
               data={opts}
               keyExtractor={(y) => String(y)}
@@ -141,6 +139,7 @@ function YearDropdown({ years, value, onChange }) {
               }}
               ItemSeparatorComponent={() => <View style={styles.sep} />}
             />
+
             <Pressable style={styles.modalClose} onPress={() => setOpen(false)}>
               <Text style={styles.modalCloseText}>Close</Text>
             </Pressable>
@@ -151,7 +150,7 @@ function YearDropdown({ years, value, onChange }) {
   );
 }
 
-export default function DownloadsTab() {
+export default function DownloadsTab({ navigation }) {
   const [query, setQuery] = useState("");
 
   const [availableYears, setAvailableYears] = useState([]);
@@ -163,7 +162,7 @@ export default function DownloadsTab() {
 
   const [formTypes, setFormTypes] = useState([]); // base list
   const [formYearIndex, setFormYearIndex] = useState({});
-  const [schemaByFormYear, setSchemaByFormYear] = useState({});
+  const [schemaByFormYear, setSchemaByFormYear] = useState({}); // key: "id:year" -> best schemaVersion
 
   const [downloadedForms, setDownloadedForms] = useState([]);
   const [drafts, setDrafts] = useState([]);
@@ -172,6 +171,15 @@ export default function DownloadsTab() {
     if (yearFilter === "ALL" || yearFilter === null) return null;
     return toYearNum(yearFilter);
   }, [yearFilter]);
+
+  const formTypeNameById = useMemo(() => {
+    const map = new Map();
+    (Array.isArray(formTypes) ? formTypes : []).forEach((ft) => {
+      if (!ft?.id) return;
+      map.set(Number(ft.id), formTypeDisplayName(ft));
+    });
+    return map;
+  }, [formTypes]);
 
   const loadLocal = useCallback(async () => {
     const [dl, dr] = await Promise.all([listDownloadedForms(), listDrafts()]);
@@ -187,7 +195,7 @@ export default function DownloadsTab() {
   }, []);
 
   const loadBaseForms = useCallback(async () => {
-    const fresh = await fetchFormTypes();
+    const fresh = await fetchFormTypes(); // base list (no year)
     const list = Array.isArray(fresh) ? fresh : [];
     setFormTypes(list);
     return list;
@@ -198,11 +206,11 @@ export default function DownloadsTab() {
     if (!ys.length) {
       setFormYearIndex({});
       setSchemaByFormYear({});
-      return { index: {}, schemaMap: {} };
+      return;
     }
 
-    const index = {};
-    const schemaMap = {};
+    const index = {}; // id -> Set(year)
+    const schemaMap = {}; // "id:year" -> best schemaVersion
 
     for (const y of ys) {
       try {
@@ -232,7 +240,6 @@ export default function DownloadsTab() {
 
     setFormYearIndex(out);
     setSchemaByFormYear(schemaMap);
-    return { index: out, schemaMap };
   }, []);
 
   const fullReload = useCallback(async () => {
@@ -243,6 +250,7 @@ export default function DownloadsTab() {
       const years = await loadYears();
       await loadBaseForms();
       await buildFormYearIndex(years);
+
       if (!years.length) setStatus("No years available from database.");
     } catch (e) {
       setStatus(extractErrMessage(e));
@@ -282,57 +290,81 @@ export default function DownloadsTab() {
     return map;
   }, [drafts]);
 
-  const enrichedForms = useMemo(() => {
+  // Base forms list (for downloading) — shows proper year per form (latest if ALL)
+  const formsForDownloadRows = useMemo(() => {
     const list = Array.isArray(formTypes) ? formTypes : [];
-    return list.map((f) => {
-      const years = Array.isArray(formYearIndex?.[f.id]) ? formYearIndex[f.id] : [];
+
+    const enriched = list.map((ft) => {
+      const years = Array.isArray(formYearIndex?.[ft.id]) ? formYearIndex[ft.id] : [];
       const sorted = years.slice().sort((a, b) => b - a);
       const latest = sorted[0] ?? null;
 
-      const availableForSelectedYear = selectedYearNum ? sorted.includes(selectedYearNum) : true;
+      const resolvedYear = selectedYearNum ? selectedYearNum : latest; // the year this row uses
       const badgeYear = selectedYearNum ? selectedYearNum : latest;
-      const resolvedYear = selectedYearNum ? selectedYearNum : latest;
 
-      const key = resolvedYear ? `${Number(f.id)}:${Number(resolvedYear)}` : null;
-      const downloaded = key ? downloadedIndex.get(key) === true : false;
-      const draftCount = key ? draftCountIndex.get(key) || 0 : 0;
+      const formTypeId = Number(ft.id);
+      const y = toYearNum(resolvedYear);
+
+      const key = y ? `${formTypeId}:${y}` : null;
 
       return {
-        ...f,
-        _title: formTitle(f),
-        _availableYears: sorted,
-        _latestYear: latest,
-        _badgeYear: badgeYear,
-        _resolvedYear: resolvedYear,
-        _availableForSelectedYear: availableForSelectedYear,
-        _downloadedForResolvedYear: downloaded,
-        _draftCountForResolvedYear: draftCount,
+        id: formTypeId,
+        name: formTypeDisplayName(ft),
+        raw: ft,
+        years: sorted,
+        badgeYear,
+        resolvedYear: y,
+        downloaded: key ? downloadedIndex.get(key) === true : false,
+        draftCount: key ? draftCountIndex.get(key) || 0 : 0,
       };
     });
-  }, [formTypes, formYearIndex, selectedYearNum, downloadedIndex, draftCountIndex]);
 
-  const visibleForms = useMemo(() => {
-    const base = selectedYearNum
-      ? enrichedForms.filter((f) => f._availableForSelectedYear)
-      : enrichedForms;
+    // Apply filter (when user chose a year, show only those forms that are available for that year)
+    const filtered = selectedYearNum
+      ? enriched.filter((r) => r.years.includes(selectedYearNum))
+      : enriched;
 
+    // Apply search
     const q = normalizeString(query);
-    if (!q) return base;
+    if (!q) return filtered;
 
-    return base.filter((it) => {
+    return filtered.filter((r) => {
+      const f = r.raw;
       return (
-        includesLoose(it?._title, q) ||
-        includesLoose(it?.key, q) ||
-        includesLoose(it?.sector_key, q) ||
-        includesLoose(it?.description, q)
+        includesLoose(r.name, q) ||
+        includesLoose(f?.key, q) ||
+        includesLoose(f?.sector_key, q) ||
+        includesLoose(f?.description, q)
       );
     });
-  }, [enrichedForms, selectedYearNum, query]);
+  }, [formTypes, formYearIndex, selectedYearNum, query, downloadedIndex, draftCountIndex]);
+
+  const openForm = useCallback(
+    ({ formTypeId, year }) => {
+      if (!formTypeId || !year) {
+        Alert.alert("Cannot open", "Missing formTypeId/year.");
+        return;
+      }
+
+      // AppTabs has route "Forms" -> FormsStack -> screen "FormAnswer"
+      navigation.navigate("Forms", {
+        screen: "FormAnswer",
+        params: {
+          mode: "new",
+          formTypeId,
+          year,
+          // hint for your FormAnswerScreen (optional; safe to ignore)
+          preferOffline: true,
+        },
+      });
+    },
+    [navigation]
+  );
 
   const handleDownload = useCallback(
-    async (item) => {
-      const formTypeId = Number(item?.id);
-      const yearToUse = toYearNum(item?._resolvedYear);
+    async (row) => {
+      const formTypeId = Number(row?.id);
+      const yearToUse = toYearNum(row?.resolvedYear);
 
       if (!Number.isFinite(formTypeId) || formTypeId < 1) return;
 
@@ -358,10 +390,7 @@ export default function DownloadsTab() {
       }
 
       if (!sv?.schema_json || !sv?.ui_json) {
-        Alert.alert(
-          "Cannot download",
-          "schema_json/ui_json is missing in schema_versions returned by /form-types?year=YYYY."
-        );
+        Alert.alert("Cannot download", "schema_json/ui_json is missing in schema_versions.");
         return;
       }
 
@@ -369,7 +398,8 @@ export default function DownloadsTab() {
         await saveDownloadedForm({
           formTypeId,
           year: yearToUse,
-          title: item?._title ?? item?.name ?? `Form ${formTypeId}`,
+          // IMPORTANT: store human-readable name for offline list
+          title: row?.name || formTypeNameById.get(formTypeId) || `Form Type ${formTypeId}`,
           schemaVersionId: sv?.id ?? null,
           version: sv?.version ?? null,
           status: sv?.status ?? null,
@@ -379,19 +409,17 @@ export default function DownloadsTab() {
         });
 
         await loadLocal();
-        Alert.alert("Downloaded", `${item?._title ?? "Form"} (${yearToUse}) saved for offline use.`);
+        Alert.alert("Downloaded", `${row?.name ?? "Form"} (${yearToUse}) saved for offline use.`);
       } catch (e) {
         Alert.alert("Download failed", extractErrMessage(e));
       }
     },
-    [downloadedIndex, schemaByFormYear, loadLocal]
+    [downloadedIndex, schemaByFormYear, loadLocal, formTypeNameById]
   );
 
   const handleRemoveDownloaded = useCallback(
-    async (item) => {
-      const formTypeId = Number(item?.id);
-      const yearToUse = toYearNum(item?._resolvedYear);
-      if (!formTypeId || !yearToUse) return;
+    async ({ formTypeId, year }) => {
+      if (!formTypeId || !year) return;
 
       Alert.alert("Remove Downloaded Form", "Delete this offline form cache?", [
         { text: "Cancel", style: "cancel" },
@@ -399,7 +427,7 @@ export default function DownloadsTab() {
           text: "Delete",
           style: "destructive",
           onPress: async () => {
-            await deleteDownloadedForm(formTypeId, yearToUse);
+            await deleteDownloadedForm(formTypeId, year);
             await loadLocal();
           },
         },
@@ -408,44 +436,72 @@ export default function DownloadsTab() {
     [loadLocal]
   );
 
-  const renderRow = ({ item }) => {
-    const badgeText = item?._badgeYear ? String(item._badgeYear) : "—";
-    const downloaded = !!item?._downloadedForResolvedYear;
-    const draftCount = Number(item?._draftCountForResolvedYear ?? 0) || 0;
-    const yearToUse = toYearNum(item?._resolvedYear);
-    const canDownload = !!yearToUse && !downloaded;
+  const downloadedRows = useMemo(() => {
+    const list = Array.isArray(downloadedForms) ? downloadedForms : [];
+    return list
+      .map((d) => {
+        const formTypeId = Number(d?.formTypeId);
+        const year = toYearNum(d?.year);
+        const title =
+          normalizeString(d?.title) ||
+          formTypeNameById.get(formTypeId) ||
+          `Form Type ${formTypeId}`;
+
+        return {
+          key: `${formTypeId}:${year ?? "—"}`,
+          formTypeId,
+          year,
+          title,
+          downloadedAt: d?.downloadedAt ?? d?.downloaded_at ?? null,
+        };
+      })
+      .filter((r) => r.formTypeId && r.year);
+  }, [downloadedForms, formTypeNameById]);
+
+  const renderDownloadRow = ({ item }) => {
+    const yearToUse = item?.resolvedYear;
+    const canDownload = !!yearToUse && !item?.downloaded;
 
     return (
       <View style={styles.rowCard}>
         <View style={{ flex: 1 }}>
           <View style={styles.rowTop}>
             <Text style={styles.rowTitle} numberOfLines={1}>
-              {item?._title}
+              {item?.name}
             </Text>
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{badgeText}</Text>
+              <Text style={styles.badgeText}>{item?.badgeYear ? String(item.badgeYear) : "—"}</Text>
             </View>
           </View>
 
-          <Text style={styles.rowSub} numberOfLines={1}>
-            {item?.sector_key ? `${item.sector_key} • ` : ""}
-            {item?.key ?? ""}
-          </Text>
-
           <Text style={styles.rowMeta} numberOfLines={1}>
-            {downloaded ? "Downloaded" : "Not downloaded"} • Draft:{draftCount}
-            {!selectedYearNum && Array.isArray(item?._availableYears) && item._availableYears.length > 1
-              ? ` • Available: ${item._availableYears.join(", ")}`
+            Year: {yearToUse ?? "—"} • {item?.downloaded ? "Downloaded" : "Not downloaded"} • Draft:
+            {Number(item?.draftCount ?? 0) || 0}
+            {!selectedYearNum && Array.isArray(item?.years) && item.years.length > 1
+              ? ` • Available: ${item.years.join(", ")}`
               : ""}
           </Text>
         </View>
 
-        {downloaded ? (
+        {/* Open button (works if yearToUse exists; offline if already downloaded) */}
+        <Pressable
+          onPress={() => openForm({ formTypeId: item.id, year: yearToUse })}
+          disabled={!yearToUse}
+          style={({ pressed }) => [
+            styles.btnGhost,
+            !yearToUse && styles.btnDisabled,
+            pressed && yearToUse && styles.pressed,
+          ]}
+        >
+          <Text style={styles.btnGhostText}>Open</Text>
+        </Pressable>
+
+        {item?.downloaded ? (
           <Pressable
-            onPress={() => handleRemoveDownloaded(item)}
-            style={({ pressed }) => [styles.btnGhost, pressed && styles.pressed]}
+            onPress={() => handleRemoveDownloaded({ formTypeId: item.id, year: yearToUse })}
+            style={({ pressed }) => [styles.btnDanger, pressed && styles.pressed]}
           >
-            <Text style={styles.btnGhostText}>Remove</Text>
+            <Text style={styles.btnDangerText}>Remove</Text>
           </Pressable>
         ) : (
           <Pressable
@@ -454,7 +510,7 @@ export default function DownloadsTab() {
             style={({ pressed }) => [
               styles.btn,
               !canDownload && styles.btnDisabled,
-              pressed && canDownload && styles.btnPressed,
+              pressed && canDownload && styles.pressed,
             ]}
           >
             <Text style={styles.btnText}>{canDownload ? "Download" : "No schema"}</Text>
@@ -509,13 +565,13 @@ export default function DownloadsTab() {
       ) : (
         <>
           <Text style={styles.sectionTitle}>
-            Forms {selectedYearNum ? `(Year ${selectedYearNum})` : "(ALL years)"}
+            Forms {selectedYearNum ? `(Year ${selectedYearNum})` : "(ALL years)"} — Download / Open
           </Text>
 
           <FlatList
-            data={visibleForms}
+            data={formsForDownloadRows}
             keyExtractor={(it) => String(it.id)}
-            renderItem={renderRow}
+            renderItem={renderDownloadRow}
             scrollEnabled={false}
             ListEmptyComponent={
               <View style={styles.empty}>
@@ -525,29 +581,47 @@ export default function DownloadsTab() {
             }
           />
 
+          {/* Downloaded Forms list (human-readable + Open) */}
           <View style={styles.card}>
             <View style={styles.cardHeaderRow}>
               <Text style={styles.cardTitle}>Downloaded Forms</Text>
-              <Text style={styles.badgeCount}>{downloadedForms.length}</Text>
+              <Text style={styles.badgeCount}>{downloadedRows.length}</Text>
             </View>
-            <Text style={styles.cardSub}>Offline caches stored locally.</Text>
+            <Text style={styles.cardSub}>Offline-ready. Use Open to answer even without internet.</Text>
 
-            <DownloadedFormsList
-              forms={downloadedForms}
-              onDelete={(form) =>
-                Alert.alert("Remove Downloaded Form", "Delete this offline form cache?", [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Delete",
-                    style: "destructive",
-                    onPress: async () => {
-                      await deleteDownloadedForm(form?.formTypeId, form?.year);
-                      await loadLocal();
-                    },
-                  },
-                ])
-              }
-            />
+            {!downloadedRows.length ? (
+              <View style={styles.empty2}>
+                <Text style={styles.emptyTitle2}>No downloaded forms</Text>
+                <Text style={styles.emptySub2}>Download a form above, then it will appear here.</Text>
+              </View>
+            ) : (
+              downloadedRows.map((r) => (
+                <View key={r.key} style={styles.dlRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.dlTitle} numberOfLines={1}>
+                      {r.title}
+                    </Text>
+                    <Text style={styles.dlMeta} numberOfLines={1}>
+                      Year: {r.year}
+                    </Text>
+                  </View>
+
+                  <Pressable
+                    onPress={() => openForm({ formTypeId: r.formTypeId, year: r.year })}
+                    style={({ pressed }) => [styles.btnGhost, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.btnGhostText}>Open</Text>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => handleRemoveDownloaded({ formTypeId: r.formTypeId, year: r.year })}
+                    style={({ pressed }) => [styles.btnDanger, pressed && styles.pressed]}
+                  >
+                    <Text style={styles.btnDangerText}>Remove</Text>
+                  </Pressable>
+                </View>
+              ))
+            )}
           </View>
         </>
       )}
@@ -567,31 +641,6 @@ const styles = StyleSheet.create({
   },
 
   status: { marginTop: 10, fontSize: 13, color: "#444" },
-
-  card: {
-    borderWidth: 1,
-    borderColor: "#eee",
-    borderRadius: 14,
-    padding: 14,
-    marginTop: 12,
-    backgroundColor: "#fff",
-  },
-
-  cardHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  cardTitle: { fontSize: 16, fontWeight: "900", color: "#111" },
-  cardSub: { marginTop: 6, fontSize: 12.5, color: "#666", lineHeight: 18 },
-  badgeCount: {
-    minWidth: 28,
-    textAlign: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fafafa",
-    fontWeight: "900",
-    color: "#222",
-  },
 
   controls: { marginTop: 10, flexDirection: "row", alignItems: "flex-end", gap: 12 },
   controls2: { marginTop: 10, flexDirection: "row", alignItems: "center", gap: 10 },
@@ -639,7 +688,7 @@ const styles = StyleSheet.create({
 
   rowCard: {
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
     padding: 14,
     borderWidth: 1,
     borderColor: "#eee",
@@ -650,7 +699,6 @@ const styles = StyleSheet.create({
   },
   rowTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   rowTitle: { flex: 1, fontSize: 15, fontWeight: "900", color: "#111" },
-  rowSub: { marginTop: 6, fontSize: 12, color: "#666" },
   rowMeta: { marginTop: 8, fontSize: 11.5, color: "#666" },
 
   badge: {
@@ -674,8 +722,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   btnText: { color: "#fff", fontWeight: "900", fontSize: 12 },
-  btnDisabled: { opacity: 0.4 },
-  btnPressed: { opacity: 0.85 },
 
   btnGhost: {
     height: 36,
@@ -689,11 +735,63 @@ const styles = StyleSheet.create({
   },
   btnGhostText: { color: "#111", fontWeight: "900", fontSize: 12 },
 
+  btnDanger: {
+    height: 36,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#dc2626",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  btnDangerText: { color: "#dc2626", fontWeight: "900", fontSize: 12 },
+
+  btnDisabled: { opacity: 0.4 },
   pressed: { opacity: 0.85 },
+
+  card: {
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 14,
+    padding: 14,
+    marginTop: 12,
+    backgroundColor: "#fff",
+  },
+  cardHeaderRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  cardTitle: { fontSize: 16, fontWeight: "900", color: "#111" },
+  cardSub: { marginTop: 6, fontSize: 12.5, color: "#666", lineHeight: 18 },
+  badgeCount: {
+    minWidth: 28,
+    textAlign: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: "#eee",
+    backgroundColor: "#fafafa",
+    fontWeight: "900",
+    color: "#222",
+  },
+
+  dlRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  dlTitle: { fontSize: 14, fontWeight: "900", color: "#111" },
+  dlMeta: { marginTop: 4, fontSize: 12, color: "#666" },
 
   empty: { padding: 18 },
   emptyTitle: { fontSize: 16, fontWeight: "900", color: "#111" },
   emptySub: { marginTop: 6, color: "#666" },
+
+  empty2: { paddingVertical: 8 },
+  emptyTitle2: { fontSize: 14, fontWeight: "900", color: "#111" },
+  emptySub2: { marginTop: 6, fontSize: 12.5, color: "#666", lineHeight: 18 },
 
   // modal
   modalOverlay: {
