@@ -21,7 +21,17 @@ import {
   saveDownloadedForm,
 } from "../../../storage/offlineStore";
 
-import { fetchFormTypes, fetchFormYears } from "../../../lib/forms";
+import { fetchFormTypes, fetchFormYears, fetchFormMapping } from "../../../lib/forms";
+
+/**
+ * FIX APPLIED:
+ * - Download now stores mapping_json together with schema_json + ui_json
+ *   so FormAnswerScreen can render dropdowns offline without network.
+ *
+ * Notes:
+ * - Download requires online to fetch mapping_json once.
+ * - Open always passes preferOffline: true (same as before).
+ */
 
 function toYearNum(v) {
   const y = Number(String(v ?? "").trim());
@@ -99,6 +109,20 @@ function formTypeDisplayName(ft) {
     normalizeString(ft?.key) ||
     (ft?.id ? `Form Type ${ft.id}` : "Form")
   );
+}
+
+function normalizeMappingJson(raw) {
+  if (!raw) return {};
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch {
+      return {};
+    }
+  }
+  if (typeof raw === "object") return raw;
+  return {};
 }
 
 function YearDropdown({ years, value, onChange }) {
@@ -319,12 +343,8 @@ export default function DownloadsTab({ navigation }) {
       };
     });
 
-    // Apply filter (when user chose a year, show only those forms that are available for that year)
-    const filtered = selectedYearNum
-      ? enriched.filter((r) => r.years.includes(selectedYearNum))
-      : enriched;
+    const filtered = selectedYearNum ? enriched.filter((r) => r.years.includes(selectedYearNum)) : enriched;
 
-    // Apply search
     const q = normalizeString(query);
     if (!q) return filtered;
 
@@ -346,14 +366,12 @@ export default function DownloadsTab({ navigation }) {
         return;
       }
 
-      // AppTabs has route "Forms" -> FormsStack -> screen "FormAnswer"
       navigation.navigate("Forms", {
         screen: "FormAnswer",
         params: {
           mode: "new",
           formTypeId,
           year,
-          // hint for your FormAnswerScreen (optional; safe to ignore)
           preferOffline: true,
         },
       });
@@ -385,7 +403,10 @@ export default function DownloadsTab({ navigation }) {
 
       const sv = schemaByFormYear?.[key];
       if (!sv) {
-        Alert.alert("Schema not found", `No schema_versions found for form_type_id=${formTypeId}, year=${yearToUse}.`);
+        Alert.alert(
+          "Schema not found",
+          `No schema_versions found for form_type_id=${formTypeId}, year=${yearToUse}.`
+        );
         return;
       }
 
@@ -395,16 +416,33 @@ export default function DownloadsTab({ navigation }) {
       }
 
       try {
+        // ✅ FIX: fetch mapping_json during download and store it
+        let mapping_json = {};
+        try {
+          const mapping = await fetchFormMapping({ formTypeId, year: yearToUse });
+          mapping_json = normalizeMappingJson(mapping?.mapping_json ?? mapping?.mappingJson ?? {});
+        } catch (e) {
+          // If mapping is required for your dropdowns, keep this as a hard fail.
+          // If you want to allow schema-only offline, change this to warn + continue.
+          throw new Error(`Mapping fetch failed: ${extractErrMessage(e)}`);
+        }
+
         await saveDownloadedForm({
           formTypeId,
           year: yearToUse,
-          // IMPORTANT: store human-readable name for offline list
+
           title: row?.name || formTypeNameById.get(formTypeId) || `Form Type ${formTypeId}`,
+
           schemaVersionId: sv?.id ?? null,
           version: sv?.version ?? null,
           status: sv?.status ?? null,
+
           schema_json: sv.schema_json,
           ui_json: sv.ui_json,
+
+          // ✅ NEW
+          mapping_json,
+
           downloadedAt: new Date().toISOString(),
         });
 
@@ -447,12 +485,16 @@ export default function DownloadsTab({ navigation }) {
           formTypeNameById.get(formTypeId) ||
           `Form Type ${formTypeId}`;
 
+        const hasMapping =
+          !!d?.mapping_json || !!d?.mappingJson || !!d?.mapping;
+
         return {
           key: `${formTypeId}:${year ?? "—"}`,
           formTypeId,
           year,
           title,
           downloadedAt: d?.downloadedAt ?? d?.downloaded_at ?? null,
+          hasMapping,
         };
       })
       .filter((r) => r.formTypeId && r.year);
@@ -483,7 +525,6 @@ export default function DownloadsTab({ navigation }) {
           </Text>
         </View>
 
-        {/* Open button (works if yearToUse exists; offline if already downloaded) */}
         <Pressable
           onPress={() => openForm({ formTypeId: item.id, year: yearToUse })}
           disabled={!yearToUse}
@@ -581,13 +622,14 @@ export default function DownloadsTab({ navigation }) {
             }
           />
 
-          {/* Downloaded Forms list (human-readable + Open) */}
           <View style={styles.card}>
             <View style={styles.cardHeaderRow}>
               <Text style={styles.cardTitle}>Downloaded Forms</Text>
               <Text style={styles.badgeCount}>{downloadedRows.length}</Text>
             </View>
-            <Text style={styles.cardSub}>Offline-ready. Use Open to answer even without internet.</Text>
+            <Text style={styles.cardSub}>
+              Offline-ready. Use Open to answer even without internet.
+            </Text>
 
             {!downloadedRows.length ? (
               <View style={styles.empty2}>
@@ -602,7 +644,7 @@ export default function DownloadsTab({ navigation }) {
                       {r.title}
                     </Text>
                     <Text style={styles.dlMeta} numberOfLines={1}>
-                      Year: {r.year}
+                      Year: {r.year} • {r.hasMapping ? "mapping_json: yes" : "mapping_json: no"}
                     </Text>
                   </View>
 
@@ -793,7 +835,6 @@ const styles = StyleSheet.create({
   emptyTitle2: { fontSize: 14, fontWeight: "900", color: "#111" },
   emptySub2: { marginTop: 6, fontSize: 12.5, color: "#666", lineHeight: 18 },
 
-  // modal
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.35)",

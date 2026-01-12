@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -16,14 +17,14 @@ import {
   fetchFormMapping,
   fetchFormTypes,
 } from "../../lib/forms";
-import { cacheMappingJson, getCachedMappingJson } from "../../lib/cacheStore";
 
 import LocationPicker from "../../ui/LocationPicker";
 import SchemaFormRenderer from "../../ui/SchemaFormRenderer";
 
-// Local-only drafts + downloaded forms
 import { listDrafts, saveDraft, listDownloadedForms } from "../../storage/offlineStore";
 import { submitDraftOnline } from "../../services/offlineSyncService";
+
+/* ------------------------ utils ------------------------ */
 
 function toYearNum(v) {
   const y = Number(String(v ?? "").trim());
@@ -32,26 +33,17 @@ function toYearNum(v) {
   return Math.trunc(y);
 }
 
-function pickActiveSchema(schemaVersions = []) {
-  const list = Array.isArray(schemaVersions) ? schemaVersions : [];
-  const active = list.find((v) => v?.status === "active");
-  return active || list[0] || null;
+function toInt(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? Math.trunc(n) : null;
 }
 
-function extractSchemaFromForm(form) {
-  const versions = form?.schema_versions || form?.schemaVersions || [];
-  const active = pickActiveSchema(versions);
-  const schemaJson = active?.schema_json ?? active?.schemaJson ?? null;
-  const schemaVersionId = active?.id ?? null;
-  return { activeSchema: active, schemaJson, schemaVersionId };
-}
-
-function normalizeSchemaJson(raw) {
+function normalizeJson(raw) {
   if (!raw) return null;
   if (typeof raw === "string") {
     try {
-      const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? parsed : null;
+      const p = JSON.parse(raw);
+      return p && typeof p === "object" ? p : null;
     } catch {
       return null;
     }
@@ -60,15 +52,37 @@ function normalizeSchemaJson(raw) {
   return null;
 }
 
+function normalizeMappingJson(raw) {
+  const v = normalizeJson(raw);
+  return v && typeof v === "object" ? v : {};
+}
+
+function extractErrMessage(e) {
+  if (!e) return "Unknown error";
+  if (typeof e === "string") return e;
+  if (e?.message) return String(e.message);
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
+function makeDraftId() {
+  return `draft_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
+
+// robust snapshot builder: works for fields array only; if schema shape differs, snapshots can be built by renderer later
 function buildSnapshotsFromSchema(schemaJson) {
-  const sj = normalizeSchemaJson(schemaJson);
+  const sj = normalizeJson(schemaJson);
   const fields = Array.isArray(sj?.fields) ? sj.fields : [];
   const meta = {};
   for (const f of fields) {
-    if (!f?.key) continue;
-    meta[f.key] = {
-      key: f.key,
-      label: f.label ?? f.key,
+    const k = String(f?.key ?? "").trim();
+    if (!k) continue;
+    meta[k] = {
+      key: k,
+      label: f.label ?? k,
       type: f.type ?? "text",
       required: !!f.required,
       option_key: f.option_key ?? f.optionKey ?? null,
@@ -78,56 +92,92 @@ function buildSnapshotsFromSchema(schemaJson) {
   return meta;
 }
 
-function normalizeMappingJson(raw) {
-  if (!raw) return {};
-  if (typeof raw === "string") {
-    try {
-      const parsed = JSON.parse(raw);
-      return parsed && typeof parsed === "object" ? parsed : {};
-    } catch {
-      return {};
-    }
-  }
-  if (typeof raw === "object") return raw;
-  return {};
+function pickActiveSchema(schemaVersions = []) {
+  const list = Array.isArray(schemaVersions) ? schemaVersions : [];
+  const active = list.find((v) => String(v?.status || "").toLowerCase() === "active");
+  return active || list[0] || null;
 }
 
-function makeDraftId() {
-  // lightweight unique id
-  return `draft_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+function extractSchemaFromForm(form) {
+  const versions = form?.schema_versions || form?.schemaVersions || [];
+  const active = pickActiveSchema(versions);
+  const schemaJson = active?.schema_json ?? active?.schemaJson ?? null;
+  const schemaVersionId = active?.id ?? null;
+  return { schemaJson, schemaVersionId };
 }
 
-/**
- * UPDATED FLOW (local-only drafts):
- * - Save Draft = save JSON locally (offlineStore)
- * - Submit = tries online submit; if fails, keeps draft
- *
- * Route params supported:
- * - formTypeId, year
- * - mode: "new" | "draft"
- * - draftId (when mode="draft")
- */
-export default function FormAnswerScreen({ route, navigation }) {
-  const { formTypeId, year: initialYear, mode = "new", draftId: routeDraftId } = route.params || {};
+/* ------------------------ offline-only location UI ------------------------ */
 
-  const yearToSend = useMemo(
-    () => toYearNum(initialYear) ?? new Date().getFullYear(),
-    [initialYear]
+function OfflineLocationPicker({ value, onChange, strict }) {
+  const v = value || {};
+  const set = (patch) => onChange?.({ ...v, ...patch });
+
+  return (
+    <View style={styles.locCard}>
+      <Text style={styles.locTitle}>Location (Offline)</Text>
+      <Text style={styles.locHint}>
+        Offline mode: no network lookups. Type values manually.
+      </Text>
+
+      <Text style={styles.locLabel}>Region</Text>
+      <TextInput
+        style={styles.locInput}
+        value={String(v.reg_name ?? "")}
+        onChangeText={(t) => set({ reg_name: t })}
+        placeholder="Region"
+      />
+
+      <Text style={styles.locLabel}>Province</Text>
+      <TextInput
+        style={styles.locInput}
+        value={String(v.prov_name ?? "")}
+        onChangeText={(t) => set({ prov_name: t })}
+        placeholder="Province"
+      />
+
+      <Text style={styles.locLabel}>City/Municipality</Text>
+      <TextInput
+        style={styles.locInput}
+        value={String(v.city_name ?? "")}
+        onChangeText={(t) => set({ city_name: t })}
+        placeholder="City / Municipality"
+      />
+
+      <Text style={styles.locLabel}>Barangay {strict ? "(required on submit)" : ""}</Text>
+      <TextInput
+        style={styles.locInput}
+        value={String(v.brgy_name ?? "")}
+        onChangeText={(t) => set({ brgy_name: t })}
+        placeholder="Barangay"
+      />
+    </View>
   );
+}
+
+/* ------------------------ screen ------------------------ */
+
+export default function FormAnswerScreen({ route, navigation }) {
+  const params = route?.params || {};
+  const mode = String(params?.mode || "new").toLowerCase();
+  const routeDraftId = params?.draftId || null;
+  const preferOffline = !!params?.preferOffline;
+
+  const routeFormTypeId = toInt(params?.formTypeId);
+  const routeYear = toYearNum(params?.year);
 
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
 
-  const [form, setForm] = useState(null);
+  const [effectiveFormTypeId, setEffectiveFormTypeId] = useState(routeFormTypeId);
+  const [effectiveYear, setEffectiveYear] = useState(routeYear ?? new Date().getFullYear());
+
+  const [formTitle, setFormTitle] = useState("Answer Form");
 
   const [schemaJson, setSchemaJson] = useState(null);
   const [schemaVersionId, setSchemaVersionId] = useState(null);
-
-  // mapping_json (dropdown options)
   const [mappingJson, setMappingJson] = useState({});
 
-  // LOCAL draft state
   const [draftId, setDraftId] = useState(routeDraftId || null);
   const [serverSubmissionId, setServerSubmissionId] = useState(null);
 
@@ -141,11 +191,16 @@ export default function FormAnswerScreen({ route, navigation }) {
     brgy_name: "",
   });
 
-  const initialHydratedRef = useRef(false);
+  const hydratedRef = useRef(false);
 
-  const canRenderFields = useMemo(() => {
-    const sj = normalizeSchemaJson(schemaJson);
-    return !!sj && Array.isArray(sj.fields) && sj.fields.length > 0;
+  /**
+   * KEY CHANGE:
+   * canRenderFields should not assume schemaJson.fields exists.
+   * If schemaJson is an object, renderer will decide if fields exist.
+   */
+  const hasSchemaObject = useMemo(() => {
+    const sj = normalizeJson(schemaJson);
+    return !!sj && typeof sj === "object";
   }, [schemaJson]);
 
   const validateLocation = useCallback(
@@ -159,152 +214,175 @@ export default function FormAnswerScreen({ route, navigation }) {
     [location]
   );
 
+  /* ------------------------ NETWORK GUARD (offline) ------------------------ */
+
+  useEffect(() => {
+    // Only guard when preferOffline=true for this screen instance.
+    if (!preferOffline) return;
+
+    const originalFetch = global.fetch;
+
+    global.fetch = async (...args) => {
+      const url = args?.[0];
+      console.log("🟥 [BLOCKED NETWORK IN OFFLINE FORM]", url);
+      // throw an error similar to RN network fail, but with explicit info
+      throw new Error(`Network blocked in offline mode. url=${String(url)}`);
+    };
+
+    return () => {
+      global.fetch = originalFetch;
+    };
+  }, [preferOffline]);
+
+  /* ------------------------ local storage helpers ------------------------ */
+
   const findLocalDraft = useCallback(async (id) => {
     const list = await listDrafts();
-    const d = (list || []).find((x) => String(x.draftId) === String(id));
-    return d || null;
+    return (list || []).find((x) => String(x?.draftId) === String(id)) || null;
   }, []);
 
   const findDownloadedForm = useCallback(async ({ formTypeIdNum, yearNum }) => {
     const list = await listDownloadedForms();
-    const f = (list || []).find(
-      (x) => String(x.formTypeId) === String(formTypeIdNum) && String(x.year) === String(yearNum)
+    return (
+      (list || []).find(
+        (x) => String(x?.formTypeId) === String(formTypeIdNum) && String(x?.year) === String(yearNum)
+      ) || null
     );
-    return f || null;
   }, []);
 
-  const loadMappingJson = useCallback(
+  const hydrateDraftIfNeeded = useCallback(async () => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+
+    if (mode !== "draft" || !routeDraftId) return;
+
+    setStatus("Loading draft...");
+    const d = await findLocalDraft(routeDraftId);
+    if (!d) {
+      setStatus("Draft not found locally.");
+      return;
+    }
+
+    const ft = toInt(d?.formTypeId ?? d?.form_type_id);
+    const y = toYearNum(d?.year);
+
+    if (ft) setEffectiveFormTypeId(ft);
+    if (y) setEffectiveYear(y);
+
+    setDraftId(d?.draftId);
+    setServerSubmissionId(d?.serverSubmissionId || null);
+    setAnswers(d?.answers || {});
+    setSnapshots(d?.snapshots || {});
+    setLocation({
+      reg_name: d?.location?.reg_name ?? "Region IV-A (CALABARZON)",
+      prov_name: d?.location?.prov_name ?? "Laguna",
+      city_name: d?.location?.city_name ?? "",
+      brgy_name: d?.location?.brgy_name ?? "",
+    });
+  }, [findLocalDraft, mode, routeDraftId]);
+
+  const loadOfflinePayload = useCallback(
     async ({ formTypeIdNum, yearNum }) => {
-      // Priority:
-      // 1) Downloaded Forms (offlineStore) for this form+year
-      // 2) cacheStore
-      // 3) network fetchFormMapping (then cache)
-      try {
-        const offline = await findDownloadedForm({ formTypeIdNum, yearNum });
-        if (offline?.mappingJson) {
-          setMappingJson(normalizeMappingJson(offline.mappingJson));
-          return { ok: true, source: "offlineStore" };
-        }
+      const off = await findDownloadedForm({ formTypeIdNum, yearNum });
+      if (!off) throw new Error("Not downloaded for this year.");
 
-        const cached = await getCachedMappingJson({ formTypeId: formTypeIdNum, year: yearNum });
-        if (cached) {
-          setMappingJson(normalizeMappingJson(cached));
-          return { ok: true, source: "cache" };
-        }
+      const sj = normalizeJson(off?.schema_json ?? off?.schemaJson);
+      const uj = normalizeJson(off?.ui_json ?? off?.uiJson);
+      if (!sj || !uj) throw new Error("Downloaded cache missing schema_json/ui_json.");
 
-        const mapping = await fetchFormMapping({ formTypeId: formTypeIdNum, year: yearNum });
-        const mj = normalizeMappingJson(mapping?.mapping_json ?? mapping?.mappingJson ?? {});
-        setMappingJson(mj);
+      const mj = off?.mapping_json ?? off?.mappingJson ?? off?.mapping ?? null;
 
-        await cacheMappingJson({ formTypeId: formTypeIdNum, year: yearNum, mappingJson: mj });
-        return { ok: true, source: "network" };
-      } catch (e) {
-        setMappingJson({});
-        return { ok: false, error: e };
-      }
+      return {
+        title: String(off?.title || "").trim() || `Form ${formTypeIdNum}`,
+        schemaJson: sj,
+        uiJson: uj,
+        schemaVersionId: off?.schemaVersionId ?? off?.schema_version_id ?? null,
+        mappingJson: normalizeMappingJson(mj),
+      };
     },
     [findDownloadedForm]
   );
 
-  const hydrateFromDraftIfNeeded = useCallback(async () => {
-    if (initialHydratedRef.current) return;
-    if (mode !== "draft") return;
-    if (!routeDraftId) return;
+  const loadOnlinePayload = useCallback(async ({ formTypeIdNum, yearNum }) => {
+    const forms = await fetchFormTypes({ year: yearNum });
+    const f = (forms || []).find((x) => String(x?.id) === String(formTypeIdNum));
+    if (!f) throw new Error("Form not found");
 
-    setStatus("Loading draft...");
-    try {
-      const d = await findLocalDraft(routeDraftId);
-      if (!d) {
-        setStatus("Draft not found locally.");
-        return;
-      }
+    let { schemaJson: sjRaw, schemaVersionId: svid } = extractSchemaFromForm(f);
+    let sj = normalizeJson(sjRaw);
 
-      setDraftId(d.draftId);
-      setServerSubmissionId(d.serverSubmissionId || null);
-
-      setAnswers(d.answers || {});
-      setSnapshots(d.snapshots || {});
-      setLocation({
-        reg_name: d?.location?.reg_name ?? "Region IV-A (CALABARZON)",
-        prov_name: d?.location?.prov_name ?? "Laguna",
-        city_name: d?.location?.city_name ?? "",
-        brgy_name: d?.location?.brgy_name ?? "",
-      });
-    } finally {
-      initialHydratedRef.current = true;
+    if (!sj || !svid) {
+      const sv = await fetchActiveSchemaForFormType({ formTypeId: formTypeIdNum, year: yearNum });
+      sj = normalizeJson(sv?.schema_json ?? sv?.schemaJson);
+      svid = sv?.id ?? svid ?? null;
     }
-  }, [findLocalDraft, mode, routeDraftId]);
+
+    const mapping = await fetchFormMapping({ formTypeId: formTypeIdNum, year: yearNum });
+    const mj = normalizeMappingJson(mapping?.mapping_json ?? mapping?.mappingJson);
+
+    return {
+      title: String(f?.name || f?.title || f?.key || "").trim() || `Form ${formTypeIdNum}`,
+      schemaJson: sj,
+      schemaVersionId: svid,
+      mappingJson: mj,
+    };
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
     setStatus("");
 
     try {
-      if (!formTypeId) throw new Error("Missing formTypeId");
+      await hydrateDraftIfNeeded();
 
-      const formTypeIdNum = Number(formTypeId);
-      const yearNum = Number(yearToSend);
+      const formTypeIdNum = toInt(effectiveFormTypeId);
+      const yearNum = toYearNum(effectiveYear) ?? new Date().getFullYear();
 
-      // If opening a draft, hydrate answers/location first (so UI doesn't flash empty)
-      await hydrateFromDraftIfNeeded();
+      if (!formTypeIdNum) throw new Error("Missing formTypeId");
+      setEffectiveYear(yearNum);
 
-      // 1) load form list (year-aware)
-      const forms = await fetchFormTypes({ year: yearNum });
-      const f = (forms || []).find((x) => String(x.id) === String(formTypeId));
-      if (!f) throw new Error("Form not found");
-      setForm(f);
+      if (preferOffline) {
+        setStatus("Loading offline cache...");
+        const off = await loadOfflinePayload({ formTypeIdNum, yearNum });
 
-      // 2) resolve schemaJson + schemaVersionId
-      let { schemaJson: sj, schemaVersionId: svid } = extractSchemaFromForm(f);
-      sj = normalizeSchemaJson(sj);
+        setFormTitle(off.title);
+        setSchemaJson(off.schemaJson);
+        setSchemaVersionId(off.schemaVersionId || null);
+        setMappingJson(off.mappingJson);
 
-      if (!sj || !svid) {
-        setStatus("Loading schema...");
-        const sv = await fetchActiveSchemaForFormType({
-          formTypeId: formTypeIdNum,
-          year: yearNum,
-        });
+        // keep existing snapshots (draft) but enrich if schema has fields[]
+        setSnapshots((prev) => ({ ...buildSnapshotsFromSchema(off.schemaJson), ...prev }));
 
-        const svSchema = normalizeSchemaJson(sv?.schema_json ?? sv?.schemaJson ?? null);
-        const svId = sv?.id ?? null;
-
-        if (svSchema) sj = svSchema;
-        if (svId) svid = svId;
-      }
-
-      setSchemaJson(sj);
-      setSchemaVersionId(svid);
-
-      // 3) ensure snapshots baseline (labels/types) for local draft saving + backend submit
-      setSnapshots((prev) => {
-        const base = buildSnapshotsFromSchema(sj);
-        return { ...base, ...prev };
-      });
-
-      // 4) mapping_json (offline store/cache/network)
-      setStatus((prev) => prev || "Loading options...");
-      const mapRes = await loadMappingJson({ formTypeIdNum, yearNum });
-
-      // 5) status message
-      if (!sj || !Array.isArray(sj?.fields) || sj.fields.length === 0) {
-        setStatus("Schema missing / no fields returned for this form + year.");
-      } else if (!svid) {
-        setStatus("Schema loaded, but schema_version_id missing.");
-      } else if (!mapRes.ok) {
-        setStatus("Schema loaded. Options not loaded (mapping_json missing).");
-      } else {
         setStatus("");
+        return;
       }
+
+      setStatus("Loading online...");
+      const on = await loadOnlinePayload({ formTypeIdNum, yearNum });
+
+      setFormTitle(on.title);
+      setSchemaJson(on.schemaJson);
+      setSchemaVersionId(on.schemaVersionId || null);
+      setMappingJson(on.mappingJson);
+
+      setSnapshots((prev) => ({ ...buildSnapshotsFromSchema(on.schemaJson), ...prev }));
+      setStatus("");
     } catch (e) {
-      setForm(null);
       setSchemaJson(null);
       setSchemaVersionId(null);
       setMappingJson({});
-      setStatus(e?.message ? String(e.message) : "Failed to load form");
+      setStatus(extractErrMessage(e));
     } finally {
       setLoading(false);
     }
-  }, [formTypeId, yearToSend, hydrateFromDraftIfNeeded, loadMappingJson]);
+  }, [
+    hydrateDraftIfNeeded,
+    effectiveFormTypeId,
+    effectiveYear,
+    preferOffline,
+    loadOfflinePayload,
+    loadOnlinePayload,
+  ]);
 
   useEffect(() => {
     load();
@@ -312,25 +390,29 @@ export default function FormAnswerScreen({ route, navigation }) {
 
   const persistLocalDraft = useCallback(
     async ({ reason = "manual" } = {}) => {
-      if (!canRenderFields) {
-        Alert.alert("Schema missing", "No form fields to save.");
+      const formTypeIdNum = toInt(effectiveFormTypeId);
+      const yearNum = toYearNum(effectiveYear) ?? new Date().getFullYear();
+
+      if (!formTypeIdNum) {
+        Alert.alert("Missing formTypeId", "Cannot save draft.");
+        return null;
+      }
+      if (!hasSchemaObject) {
+        Alert.alert("Schema missing", "No schema loaded.");
         return null;
       }
 
-      // For draft saving: location can be partial (allow city/prov missing if you want).
-      // Here we keep it lenient to make drafts easy.
       const id = draftId || makeDraftId();
 
       setBusy(true);
-      setStatus(reason === "submit" ? "Preparing draft..." : "Saving draft (local)...");
+      setStatus(reason === "submit" ? "Preparing draft..." : "Saving draft...");
 
       try {
         const d = {
           draftId: id,
           serverSubmissionId: serverSubmissionId || null,
-          formTypeId: Number(formTypeId),
-          year: Number(yearToSend),
-          mappingId: null,
+          formTypeId: formTypeIdNum,
+          year: yearNum,
           schemaVersionId: schemaVersionId || null,
           location: {
             reg_name: location.reg_name || null,
@@ -347,11 +429,10 @@ export default function FormAnswerScreen({ route, navigation }) {
 
         await saveDraft(d);
         setDraftId(id);
-
-        setStatus("Draft saved (local)");
+        setStatus("Draft saved");
         return d;
       } catch (e) {
-        Alert.alert("Save failed", e?.message ? String(e.message) : "Failed");
+        Alert.alert("Save failed", extractErrMessage(e));
         return null;
       } finally {
         setBusy(false);
@@ -359,66 +440,67 @@ export default function FormAnswerScreen({ route, navigation }) {
     },
     [
       answers,
-      canRenderFields,
+      hasSchemaObject,
       draftId,
-      formTypeId,
+      effectiveFormTypeId,
+      effectiveYear,
       location,
       schemaVersionId,
       serverSubmissionId,
       snapshots,
-      yearToSend,
     ]
   );
 
   const onSaveDraft = useCallback(async () => {
     const d = await persistLocalDraft({ reason: "manual" });
-    if (d?.draftId) {
-      Alert.alert("Saved", `Local draft saved.\nDraft ID: ${d.draftId}`);
-    }
+    if (d?.draftId) Alert.alert("Saved", "Local draft saved.");
   }, [persistLocalDraft]);
 
   const onSubmit = useCallback(async () => {
-    if (!canRenderFields) {
-      Alert.alert("Schema missing", "No form fields to submit.");
+    if (!hasSchemaObject) {
+      Alert.alert("Schema missing", "No schema to submit.");
       return;
     }
 
-    // For submit: enforce full location
     const missing = validateLocation(true);
     if (missing.length) {
       Alert.alert("Location required", `Complete: ${missing.join(", ")}`);
       return;
     }
 
-    // Always save local draft first (so nothing is lost if submit fails)
     const d = await persistLocalDraft({ reason: "submit" });
     if (!d) return;
+
+    // If preferOffline, submission should not run.
+    if (preferOffline) {
+      Alert.alert("Offline", "You are in offline mode. Save draft then submit when online.");
+      return;
+    }
 
     setBusy(true);
     setStatus("Submitting (online)...");
 
     try {
-      // Uses offlineSyncService -> offlineSyncApi -> submissionsApi
       const submissionId = await submitDraftOnline(d);
-
       setServerSubmissionId(submissionId || null);
       setStatus("Submitted");
       Alert.alert("Submitted", `Submission #${submissionId} submitted.`);
-      navigation.goBack();
+      navigation?.goBack?.();
     } catch (e) {
-      // Keep local draft; user can retry later
       setStatus("Submit failed (draft kept locally)");
-      Alert.alert(
-        "Submit failed",
-        `${String(e?.message || e)}\n\nYour draft is still saved locally. Retry later from Offline Sync.`
-      );
+      Alert.alert("Submit failed", extractErrMessage(e));
     } finally {
       setBusy(false);
     }
-  }, [canRenderFields, navigation, persistLocalDraft, validateLocation]);
+  }, [hasSchemaObject, navigation, persistLocalDraft, validateLocation, preferOffline]);
 
-  const debugFieldsCount = normalizeSchemaJson(schemaJson)?.fields?.length ?? 0;
-  const debugMappingKeysCount = Object.keys(mappingJson || {}).length;
+  const yearLabel = toYearNum(effectiveYear) ?? new Date().getFullYear();
+
+  // debug (safe)
+  const debugSchemaKeys = useMemo(() => {
+    const sj = normalizeJson(schemaJson);
+    return sj && typeof sj === "object" ? Object.keys(sj).slice(0, 12).join(", ") : "null";
+  }, [schemaJson]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -429,37 +511,35 @@ export default function FormAnswerScreen({ route, navigation }) {
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.container}>
-          <Text style={styles.title}>{form?.name || "Answer Form"}</Text>
-          <Text style={styles.sub}>
-            {form?.sector_key || "—"} • {form?.key || "—"} • Year {yearToSend}
-          </Text>
+          <Text style={styles.title}>{formTitle}</Text>
+          <Text style={styles.sub}>Year {yearLabel}</Text>
 
           {!!status && <Text style={styles.status}>{status}</Text>}
 
-          <View style={styles.modeRow}>
-            <Text style={styles.muted}>
-              Mode: {mode === "draft" ? "Draft" : "New"} • Draft ID: {draftId || "—"}
-            </Text>
-          </View>
+          <Text style={styles.muted}>
+            Mode: {mode} • Draft: {draftId || "—"} • {preferOffline ? "Offline" : "Online"}
+          </Text>
 
-          <LocationPicker value={location} onChange={setLocation} strict={false} />
+          {/* Offline: do not allow LocationPicker (it may fetch). */}
+          {preferOffline ? (
+            <OfflineLocationPicker value={location} onChange={setLocation} strict={false} />
+          ) : (
+            <LocationPicker value={location} onChange={setLocation} strict={false} />
+          )}
 
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <Text style={styles.cardTitle}>Form Fields</Text>
-              {!canRenderFields ? (
+              {!hasSchemaObject ? (
                 <Pressable style={styles.retryBtn} onPress={load} disabled={busy}>
                   <Text style={styles.retryText}>{busy ? "..." : "Reload"}</Text>
                 </Pressable>
               ) : null}
             </View>
 
-            {!canRenderFields ? (
+            {!hasSchemaObject ? (
               <View style={{ paddingVertical: 10 }}>
-                <Text style={styles.muted}>No schema fields loaded for this form/year.</Text>
-                <Text style={styles.mutedSmall}>
-                  If you plan full offline answering, cache schema JSON too (not just mapping).
-                </Text>
+                <Text style={styles.muted}>No schema loaded.</Text>
               </View>
             ) : (
               <SchemaFormRenderer
@@ -479,27 +559,42 @@ export default function FormAnswerScreen({ route, navigation }) {
               disabled={busy}
               onPress={onSaveDraft}
             >
-              <Text style={styles.btnTextOutline}>{busy ? "Please wait..." : "Save Draft (Local)"}</Text>
+              <Text style={styles.btnTextOutline}>{busy ? "..." : "Save Draft"}</Text>
             </Pressable>
 
             <Pressable
-              style={[styles.btn, styles.btnPrimary, busy && styles.btnDisabled]}
-              disabled={busy}
+              style={[
+                styles.btn,
+                styles.btnPrimary,
+                (busy || preferOffline) && styles.btnDisabled,
+              ]}
+              disabled={busy || preferOffline}
               onPress={onSubmit}
             >
-              <Text style={styles.btnTextPrimary}>{busy ? "Please wait..." : "Submit (Online)"}</Text>
+              <Text style={styles.btnTextPrimary}>
+                {busy ? "..." : preferOffline ? "Submit (Online only)" : "Submit"}
+              </Text>
             </Pressable>
           </View>
 
           <Text style={styles.debug}>
-            schema_version_id: {schemaVersionId ? String(schemaVersionId) : "null"} • fields:{" "}
-            {debugFieldsCount} • mapping_keys: {debugMappingKeysCount}
+            formTypeId: {String(effectiveFormTypeId || "null")} • schema_version_id:{" "}
+            {schemaVersionId ? String(schemaVersionId) : "null"} • schemaKeys: {debugSchemaKeys}
           </Text>
+
+          {preferOffline ? (
+            <Text style={styles.debug2}>
+              Offline network guard is ON. If anything still tries to fetch, it will log:
+              {"\n"}🟥 [BLOCKED NETWORK IN OFFLINE FORM] &lt;url&gt;
+            </Text>
+          ) : null}
         </ScrollView>
       )}
     </SafeAreaView>
   );
 }
+
+/* ------------------------ styles ------------------------ */
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
@@ -509,9 +604,29 @@ const styles = StyleSheet.create({
   sub: { fontSize: 12, color: "#666" },
   status: { fontSize: 12, color: "#0f766e" },
   muted: { fontSize: 12, color: "#666" },
-  mutedSmall: { fontSize: 11, color: "#777", marginTop: 6 },
 
-  modeRow: { marginTop: -6 },
+  locCard: {
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 16,
+    padding: 14,
+    gap: 10,
+    backgroundColor: "#fff",
+  },
+  locTitle: { fontSize: 14, fontWeight: "900", color: "#111" },
+  locHint: { fontSize: 12, color: "#666", marginTop: -6 },
+
+  locLabel: { fontSize: 12, color: "#666", marginTop: 6 },
+  locInput: {
+    height: 44,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    backgroundColor: "#fafafa",
+    color: "#111",
+  },
 
   card: { borderWidth: 1, borderColor: "#eee", borderRadius: 16, padding: 14, gap: 10 },
   cardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -538,4 +653,5 @@ const styles = StyleSheet.create({
   btnTextPrimary: { fontSize: 13, fontWeight: "800", color: "#fff", textAlign: "center" },
 
   debug: { marginTop: 8, fontSize: 11, color: "#999" },
+  debug2: { marginTop: 6, fontSize: 11, color: "#6b7280", lineHeight: 16 },
 });
