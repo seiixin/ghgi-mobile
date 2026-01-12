@@ -9,24 +9,21 @@ import OfflineSyncScreen from "../screens/app/OfflineSyncScreen";
 const Stack = createNativeStackNavigator();
 
 /**
- * Routes supported:
- * - FormsList
- * - FormAnswer
- *   params:
- *     - formTypeId (required)
- *     - year (required)
- *     - mode: "new" | "draft" (optional, default "new")
- *     - draftId (required when mode="draft")
- * - OfflineSync (optional access from this stack)
+ * FIX #1 (Draft Open):
+ * - Ensure the route name is EXACTLY "FormAnswer"
+ * - Keep only one answering screen route and use it everywhere:
+ *     navigation.navigate("FormAnswer", { mode:"draft", draftId, ... })
  *
- * Notes:
- * - If OfflineSyncScreen is already in another navigator (Tabs/Root), remove it here.
- * - Keep "FormAnswer" route name consistent with OfflineSyncScreen + FormAnswerScreen navigation.
+ * This stack guarantees that "FormAnswer" exists.
  */
 
 export default function FormsStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerBackTitleVisible: false,
+      }}
+    >
       <Stack.Screen
         name="FormsList"
         component={FormsListScreen}
@@ -37,8 +34,9 @@ export default function FormsStack() {
         name="FormAnswer"
         component={FormAnswerScreen}
         options={({ route }) => {
-          const mode = route?.params?.mode || "new";
-          const title = mode === "draft" ? "Edit Draft" : "Answer Form";
+          const mode = String(route?.params?.mode || "new").toLowerCase();
+          const isDraft = mode === "draft";
+          const title = isDraft ? "Edit Draft" : "Answer Form";
           return { title };
         }}
       />
