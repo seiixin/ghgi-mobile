@@ -1,13 +1,19 @@
 // mobile/src/lib/forms.js
-// Fix: support apiFetch returning either:
+// Robust API helpers for forms endpoints.
+// Supports apiFetch returning any of:
 // 1) native fetch Response
-// 2) already-parsed JSON payload
+// 2) already-parsed JSON payload (object/string/etc.)
 // 3) wrapper object { ok, status, data/message/... }
 
 import { apiFetch } from "./api";
 
 function isFetchResponse(x) {
-  return !!x && typeof x === "object" && typeof x.json === "function" && typeof x.headers?.get === "function";
+  return (
+    !!x &&
+    typeof x === "object" &&
+    typeof x.json === "function" &&
+    typeof x.headers?.get === "function"
+  );
 }
 
 async function safeReadPayload(resOrPayload) {
@@ -16,14 +22,12 @@ async function safeReadPayload(resOrPayload) {
     const res = resOrPayload;
     const ct = res.headers?.get?.("content-type") || "";
     if (ct.includes("application/json")) return await res.json();
-    // RN Response usually has text(); but guard anyway
     if (typeof res.text === "function") return { message: await res.text() };
     return { message: "Non-JSON response" };
   }
 
-  // Case B: apiFetch returned parsed payload already (object/string/etc.)
+  // Case B: apiFetch returned raw text
   if (typeof resOrPayload === "string") {
-    // sometimes apiFetch returns raw text
     try {
       return JSON.parse(resOrPayload);
     } catch {
@@ -31,21 +35,20 @@ async function safeReadPayload(resOrPayload) {
     }
   }
 
-  // plain object payload
+  // Case C: already-parsed object or null
   return resOrPayload ?? {};
 }
 
 function getOk(resOrPayload, payload) {
-  // If native Response
+  // Native Response
   if (isFetchResponse(resOrPayload)) return !!resOrPayload.ok;
 
-  // If wrapper with ok
+  // Wrapper with ok boolean
   if (resOrPayload && typeof resOrPayload === "object" && typeof resOrPayload.ok === "boolean") {
     return resOrPayload.ok;
   }
 
-  // If payload contains status/error conventions
-  // Treat as OK unless it has obvious error markers
+  // Payload conventions
   if (payload && typeof payload === "object") {
     if (payload.status === "error") return false;
     if (payload.error) return false;
@@ -55,7 +58,9 @@ function getOk(resOrPayload, payload) {
 
 function getStatus(resOrPayload) {
   if (isFetchResponse(resOrPayload)) return resOrPayload.status ?? 0;
-  if (resOrPayload && typeof resOrPayload === "object" && typeof resOrPayload.status === "number") return resOrPayload.status;
+  if (resOrPayload && typeof resOrPayload === "object" && typeof resOrPayload.status === "number") {
+    return resOrPayload.status;
+  }
   return 0;
 }
 
@@ -88,13 +93,25 @@ function toYearNum(v) {
   return n;
 }
 
+function parseJsonMaybe(v, fallback) {
+  if (v === null || v === undefined) return fallback;
+  if (typeof v === "object") return v;
+  if (typeof v === "string") {
+    try {
+      const parsed = JSON.parse(v);
+      return parsed && typeof parsed === "object" ? parsed : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+  return fallback;
+}
+
 /**
  * GET /form-years
  * expected:
  *  - { years:[2023,2024] }
  *  - { data:{ years:[...] } }
- *
- * If endpoint is missing (404), this will throw with a clean message.
  */
 export async function fetchFormYears() {
   const res = await apiFetch("/form-years", { method: "GET" });
@@ -164,14 +181,84 @@ export async function fetchFormMapping({ formTypeId, year }) {
   const mapping = pick(payload, ["mapping", "data.mapping"], null);
   if (!mapping) return null;
 
-  let mappingJson = mapping.mapping_json ?? mapping.mappingJson ?? {};
-  if (typeof mappingJson === "string") {
-    try {
-      mappingJson = JSON.parse(mappingJson);
-    } catch {
-      mappingJson = {};
-    }
+  const mappingJson = parseJsonMaybe(mapping.mapping_json ?? mapping.mappingJson, {});
+  return { ...mapping, mapping_json: mappingJson };
+}
+
+/**
+ * GET /form-types/:id/active-schema?year=YYYY  (example)
+ * Your backend may expose a different path; keep this wrapper aligned.
+ *
+ * expected:
+ *  - { schemaVersion:{ id, schema_json, ... } }
+ *  - { data:{ schemaVersion:{...} } }
+ *  - { id, schema_json } (direct)
+ */
+export async function fetchActiveSchemaForFormType({ formTypeId, year }) {
+  const ft = Number(formTypeId);
+  const y = toYearNum(year);
+
+  if (!Number.isFinite(ft) || ft <= 0) throw new Error("formTypeId is required");
+  if (!y) throw new Error("year is required");
+
+  // If your API is different, update this path only.
+  const qs = `?year=${encodeURIComponent(String(y))}`;
+  const res = await apiFetch(`/form-types/${encodeURIComponent(String(ft))}/active-schema${qs}`, {
+    method: "GET",
+  });
+  const payload = await safeReadPayload(res);
+  const ok = getOk(res, payload);
+
+  if (!ok) {
+    const msg =
+      pick(payload, ["message", "error.message"], null) ||
+      `Failed to fetch active schema (status ${getStatus(res) || "?"})`;
+    throw new Error(msg);
   }
 
-  return { ...mapping, mapping_json: mappingJson };
+  const sv =
+    pick(payload, ["schemaVersion", "data.schemaVersion"], null) ??
+    (payload && typeof payload === "object" ? payload : null);
+
+  if (!sv) return null;
+
+  const schemaJson = parseJsonMaybe(sv.schema_json ?? sv.schemaJson, null);
+  return { ...sv, schema_json: schemaJson };
+}
+
+/**
+ * Used by Offline Sync module downloadForm().
+ * Returns a compact payload suitable for offlineStore.saveDownloadedForm().
+ *
+ * Output:
+ * {
+ *   formTypeId, year,
+ *   mappingId, schemaVersionId,
+ *   mappingJson, downloadedAt
+ * }
+ */
+export async function fetchFormSchema(formTypeId, year) {
+  const ft = Number(formTypeId);
+  const y = toYearNum(year);
+
+  if (!Number.isFinite(ft) || ft <= 0) throw new Error("formTypeId is required");
+  if (!y) throw new Error("year is required");
+
+  // Fetch mapping (dropdown options)
+  const mapping = await fetchFormMapping({ formTypeId: ft, year: y });
+  const mappingId = mapping?.id ?? null;
+  const mappingJson = mapping?.mapping_json ?? {};
+
+  // Fetch active schema (to capture schemaVersionId; schema_json optional for now)
+  const sv = await fetchActiveSchemaForFormType({ formTypeId: ft, year: y });
+  const schemaVersionId = sv?.id ?? null;
+
+  return {
+    formTypeId: ft,
+    year: y,
+    mappingId,
+    schemaVersionId,
+    mappingJson,
+    downloadedAt: Date.now(),
+  };
 }

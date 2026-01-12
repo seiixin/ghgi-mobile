@@ -1,5 +1,5 @@
 // mobile/src/screens/app/FormAnswerScreen.js
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,33 +16,14 @@ import {
   fetchFormMapping,
   fetchFormTypes,
 } from "../../lib/forms";
-import {
-  cacheMappingJson,
-  getCachedMappingJson,
-} from "../../lib/cacheStore";
+import { cacheMappingJson, getCachedMappingJson } from "../../lib/cacheStore";
+
 import LocationPicker from "../../ui/LocationPicker";
 import SchemaFormRenderer from "../../ui/SchemaFormRenderer";
-import {
-  createSubmission,
-  saveSubmissionAnswers,
-  submitSubmission,
-} from "../../lib/submissionsApi";
 
-/**
- * WIRED FLOW (mobile):
- * 1) FormsListScreen -> navigate("FormAnswer", { formTypeId, year })
- * 2) FormAnswerScreen loads:
- *    - formType row
- *    - active schema (from list OR fallback endpoint)
- *    - mapping_json (dropdown options) from cache OR endpoint
- * 3) User selects location + answers fields
- * 4) Save Draft:
- *    - ensureSubmission() => POST /submissions
- *    - PUT /submissions/:id/answers (mode=draft)
- * 5) Submit:
- *    - PUT /submissions/:id/answers (mode=submit)
- *    - POST /submissions/:id/submit
- */
+// Local-only drafts + downloaded forms
+import { listDrafts, saveDraft, listDownloadedForms } from "../../storage/offlineStore";
+import { submitDraftOnline } from "../../services/offlineSyncService";
 
 function toYearNum(v) {
   const y = Number(String(v ?? "").trim());
@@ -61,9 +42,8 @@ function extractSchemaFromForm(form) {
   const versions = form?.schema_versions || form?.schemaVersions || [];
   const active = pickActiveSchema(versions);
   const schemaJson = active?.schema_json ?? active?.schemaJson ?? null;
-  const schemaYear = active?.year ?? null;
   const schemaVersionId = active?.id ?? null;
-  return { activeSchema: active, schemaJson, schemaYear, schemaVersionId };
+  return { activeSchema: active, schemaJson, schemaVersionId };
 }
 
 function normalizeSchemaJson(raw) {
@@ -83,7 +63,6 @@ function normalizeSchemaJson(raw) {
 function buildSnapshotsFromSchema(schemaJson) {
   const sj = normalizeSchemaJson(schemaJson);
   const fields = Array.isArray(sj?.fields) ? sj.fields : [];
-
   const meta = {};
   for (const f of fields) {
     if (!f?.key) continue;
@@ -92,7 +71,6 @@ function buildSnapshotsFromSchema(schemaJson) {
       label: f.label ?? f.key,
       type: f.type ?? "text",
       required: !!f.required,
-      // keep these for select-like fields; renderer can fill labels later
       option_key: f.option_key ?? f.optionKey ?? null,
       option_label: null,
     };
@@ -101,7 +79,6 @@ function buildSnapshotsFromSchema(schemaJson) {
 }
 
 function normalizeMappingJson(raw) {
-  // mapping_json can be object or stringified JSON
   if (!raw) return {};
   if (typeof raw === "string") {
     try {
@@ -115,11 +92,24 @@ function normalizeMappingJson(raw) {
   return {};
 }
 
-export default function FormAnswerScreen({ route, navigation }) {
-  const { formTypeId, year: initialYear } = route.params || {};
+function makeDraftId() {
+  // lightweight unique id
+  return `draft_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+}
 
-  // IMPORTANT: year should already be DB-derived from FormsListScreen.
-  // We keep a safe fallback to device year if route param missing.
+/**
+ * UPDATED FLOW (local-only drafts):
+ * - Save Draft = save JSON locally (offlineStore)
+ * - Submit = tries online submit; if fails, keeps draft
+ *
+ * Route params supported:
+ * - formTypeId, year
+ * - mode: "new" | "draft"
+ * - draftId (when mode="draft")
+ */
+export default function FormAnswerScreen({ route, navigation }) {
+  const { formTypeId, year: initialYear, mode = "new", draftId: routeDraftId } = route.params || {};
+
   const yearToSend = useMemo(
     () => toYearNum(initialYear) ?? new Date().getFullYear(),
     [initialYear]
@@ -134,10 +124,12 @@ export default function FormAnswerScreen({ route, navigation }) {
   const [schemaJson, setSchemaJson] = useState(null);
   const [schemaVersionId, setSchemaVersionId] = useState(null);
 
-  // NEW: mapping_json (dropdown options)
+  // mapping_json (dropdown options)
   const [mappingJson, setMappingJson] = useState({});
 
-  const [submission, setSubmission] = useState(null);
+  // LOCAL draft state
+  const [draftId, setDraftId] = useState(routeDraftId || null);
+  const [serverSubmissionId, setServerSubmissionId] = useState(null);
 
   const [answers, setAnswers] = useState({});
   const [snapshots, setSnapshots] = useState({});
@@ -148,6 +140,8 @@ export default function FormAnswerScreen({ route, navigation }) {
     city_name: "",
     brgy_name: "",
   });
+
+  const initialHydratedRef = useRef(false);
 
   const canRenderFields = useMemo(() => {
     const sj = normalizeSchemaJson(schemaJson);
@@ -165,43 +159,81 @@ export default function FormAnswerScreen({ route, navigation }) {
     [location]
   );
 
+  const findLocalDraft = useCallback(async (id) => {
+    const list = await listDrafts();
+    const d = (list || []).find((x) => String(x.draftId) === String(id));
+    return d || null;
+  }, []);
+
+  const findDownloadedForm = useCallback(async ({ formTypeIdNum, yearNum }) => {
+    const list = await listDownloadedForms();
+    const f = (list || []).find(
+      (x) => String(x.formTypeId) === String(formTypeIdNum) && String(x.year) === String(yearNum)
+    );
+    return f || null;
+  }, []);
+
   const loadMappingJson = useCallback(
     async ({ formTypeIdNum, yearNum }) => {
-      // Try cache first, then endpoint, then cache it.
+      // Priority:
+      // 1) Downloaded Forms (offlineStore) for this form+year
+      // 2) cacheStore
+      // 3) network fetchFormMapping (then cache)
       try {
-        const cached = await getCachedMappingJson({
-          formTypeId: formTypeIdNum,
-          year: yearNum,
-        });
+        const offline = await findDownloadedForm({ formTypeIdNum, yearNum });
+        if (offline?.mappingJson) {
+          setMappingJson(normalizeMappingJson(offline.mappingJson));
+          return { ok: true, source: "offlineStore" };
+        }
 
+        const cached = await getCachedMappingJson({ formTypeId: formTypeIdNum, year: yearNum });
         if (cached) {
           setMappingJson(normalizeMappingJson(cached));
           return { ok: true, source: "cache" };
         }
 
-        const mapping = await fetchFormMapping({
-          formTypeId: formTypeIdNum,
-          year: yearNum,
-        });
-
+        const mapping = await fetchFormMapping({ formTypeId: formTypeIdNum, year: yearNum });
         const mj = normalizeMappingJson(mapping?.mapping_json ?? mapping?.mappingJson ?? {});
         setMappingJson(mj);
 
-        await cacheMappingJson({
-          formTypeId: formTypeIdNum,
-          year: yearNum,
-          mappingJson: mj,
-        });
-
+        await cacheMappingJson({ formTypeId: formTypeIdNum, year: yearNum, mappingJson: mj });
         return { ok: true, source: "network" };
       } catch (e) {
-        // keep empty mapping; renderer can still show non-select fields
         setMappingJson({});
         return { ok: false, error: e };
       }
     },
-    []
+    [findDownloadedForm]
   );
+
+  const hydrateFromDraftIfNeeded = useCallback(async () => {
+    if (initialHydratedRef.current) return;
+    if (mode !== "draft") return;
+    if (!routeDraftId) return;
+
+    setStatus("Loading draft...");
+    try {
+      const d = await findLocalDraft(routeDraftId);
+      if (!d) {
+        setStatus("Draft not found locally.");
+        return;
+      }
+
+      setDraftId(d.draftId);
+      setServerSubmissionId(d.serverSubmissionId || null);
+
+      setAnswers(d.answers || {});
+      setSnapshots(d.snapshots || {});
+      setLocation({
+        reg_name: d?.location?.reg_name ?? "Region IV-A (CALABARZON)",
+        prov_name: d?.location?.prov_name ?? "Laguna",
+        city_name: d?.location?.city_name ?? "",
+        brgy_name: d?.location?.brgy_name ?? "",
+      });
+    } finally {
+      initialHydratedRef.current = true;
+    }
+  }, [findLocalDraft, mode, routeDraftId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -212,6 +244,9 @@ export default function FormAnswerScreen({ route, navigation }) {
 
       const formTypeIdNum = Number(formTypeId);
       const yearNum = Number(yearToSend);
+
+      // If opening a draft, hydrate answers/location first (so UI doesn't flash empty)
+      await hydrateFromDraftIfNeeded();
 
       // 1) load form list (year-aware)
       const forms = await fetchFormTypes({ year: yearNum });
@@ -240,26 +275,23 @@ export default function FormAnswerScreen({ route, navigation }) {
       setSchemaJson(sj);
       setSchemaVersionId(svid);
 
-      // 3) ensure snapshots baseline (labels/types) for backend upsert
+      // 3) ensure snapshots baseline (labels/types) for local draft saving + backend submit
       setSnapshots((prev) => {
         const base = buildSnapshotsFromSchema(sj);
         return { ...base, ...prev };
       });
 
-      // 4) NEW: load mapping_json (dropdown options)
+      // 4) mapping_json (offline store/cache/network)
       setStatus((prev) => prev || "Loading options...");
       const mapRes = await loadMappingJson({ formTypeIdNum, yearNum });
 
-      // 5) show state messages
+      // 5) status message
       if (!sj || !Array.isArray(sj?.fields) || sj.fields.length === 0) {
         setStatus("Schema missing / no fields returned for this form + year.");
       } else if (!svid) {
-        setStatus(
-          "Schema loaded, but schema_version_id missing. Forms schema endpoint must return schema version id."
-        );
+        setStatus("Schema loaded, but schema_version_id missing.");
       } else if (!mapRes.ok) {
-        // Not fatal; but user needs this to see dropdown options.
-        setStatus("Schema loaded. Options not loaded (mapping_json missing). Long-press form in list to cache mapping or fix endpoint.");
+        setStatus("Schema loaded. Options not loaded (mapping_json missing).");
       } else {
         setStatus("");
       }
@@ -272,129 +304,118 @@ export default function FormAnswerScreen({ route, navigation }) {
     } finally {
       setLoading(false);
     }
-  }, [formTypeId, yearToSend, loadMappingJson]);
+  }, [formTypeId, yearToSend, hydrateFromDraftIfNeeded, loadMappingJson]);
 
   useEffect(() => {
     load();
   }, [load]);
 
-  async function ensureSubmission() {
-    if (submission?.id) return submission;
+  const persistLocalDraft = useCallback(
+    async ({ reason = "manual" } = {}) => {
+      if (!canRenderFields) {
+        Alert.alert("Schema missing", "No form fields to save.");
+        return null;
+      }
 
-    const missing = validateLocation(true);
-    if (missing.length) {
-      Alert.alert("Location required", `Complete: ${missing.join(", ")}`);
-      return null;
+      // For draft saving: location can be partial (allow city/prov missing if you want).
+      // Here we keep it lenient to make drafts easy.
+      const id = draftId || makeDraftId();
+
+      setBusy(true);
+      setStatus(reason === "submit" ? "Preparing draft..." : "Saving draft (local)...");
+
+      try {
+        const d = {
+          draftId: id,
+          serverSubmissionId: serverSubmissionId || null,
+          formTypeId: Number(formTypeId),
+          year: Number(yearToSend),
+          mappingId: null,
+          schemaVersionId: schemaVersionId || null,
+          location: {
+            reg_name: location.reg_name || null,
+            prov_name: location.prov_name || null,
+            city_name: location.city_name || null,
+            brgy_name: location.brgy_name || null,
+          },
+          answers: answers || {},
+          snapshots: snapshots || {},
+          status: "draft",
+          dirty: true,
+          updatedAt: Date.now(),
+        };
+
+        await saveDraft(d);
+        setDraftId(id);
+
+        setStatus("Draft saved (local)");
+        return d;
+      } catch (e) {
+        Alert.alert("Save failed", e?.message ? String(e.message) : "Failed");
+        return null;
+      } finally {
+        setBusy(false);
+      }
+    },
+    [
+      answers,
+      canRenderFields,
+      draftId,
+      formTypeId,
+      location,
+      schemaVersionId,
+      serverSubmissionId,
+      snapshots,
+      yearToSend,
+    ]
+  );
+
+  const onSaveDraft = useCallback(async () => {
+    const d = await persistLocalDraft({ reason: "manual" });
+    if (d?.draftId) {
+      Alert.alert("Saved", `Local draft saved.\nDraft ID: ${d.draftId}`);
     }
+  }, [persistLocalDraft]);
 
-    if (!schemaVersionId) {
-      Alert.alert(
-        "Schema missing",
-        "No schema_version_id found. Check forms schema response for the selected year."
-      );
-      return null;
-    }
-
-    setBusy(true);
-    setStatus("Creating submission...");
-
-    try {
-      const created = await createSubmission({
-        form_type_id: Number(formTypeId),
-        year: yearToSend,
-        schema_version_id: schemaVersionId,
-        source: "mobile",
-        reg_name: location.reg_name || null,
-        prov_name: location.prov_name || null,
-        city_name: location.city_name || null,
-        brgy_name: location.brgy_name || null,
-      });
-
-      const s = created?.submission ?? created?.data?.submission ?? null;
-      if (!s?.id) throw new Error("Create succeeded but missing submission id");
-
-      setSubmission(s);
-      setStatus(`Submission #${s.id} created`);
-      return s;
-    } catch (e) {
-      Alert.alert("Create failed", e?.message ? String(e.message) : "Failed");
-      return null;
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onSaveDraft() {
+  const onSubmit = useCallback(async () => {
     if (!canRenderFields) {
-      Alert.alert("Schema missing", "No form fields to save. Load schema first.");
+      Alert.alert("Schema missing", "No form fields to submit.");
       return;
     }
 
-    const sub = await ensureSubmission();
-    if (!sub) return;
-
-    setBusy(true);
-    setStatus("Saving draft...");
-
-    try {
-      await saveSubmissionAnswers(sub.id, {
-        mode: "draft",
-        answers,
-        snapshots,
-        reg_name: location.reg_name || null,
-        prov_name: location.prov_name || null,
-        city_name: location.city_name || null,
-        brgy_name: location.brgy_name || null,
-      });
-
-      setStatus("Draft saved");
-    } catch (e) {
-      Alert.alert("Save failed", e?.message ? String(e.message) : "Failed");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onSubmit() {
-    if (!canRenderFields) {
-      Alert.alert("Schema missing", "No form fields to submit. Load schema first.");
-      return;
-    }
-
-    const sub = await ensureSubmission();
-    if (!sub) return;
-
+    // For submit: enforce full location
     const missing = validateLocation(true);
     if (missing.length) {
       Alert.alert("Location required", `Complete: ${missing.join(", ")}`);
       return;
     }
 
+    // Always save local draft first (so nothing is lost if submit fails)
+    const d = await persistLocalDraft({ reason: "submit" });
+    if (!d) return;
+
     setBusy(true);
-    setStatus("Submitting...");
+    setStatus("Submitting (online)...");
 
     try {
-      await saveSubmissionAnswers(sub.id, {
-        mode: "submit",
-        answers,
-        snapshots,
-        reg_name: location.reg_name || null,
-        prov_name: location.prov_name || null,
-        city_name: location.city_name || null,
-        brgy_name: location.brgy_name || null,
-      });
+      // Uses offlineSyncService -> offlineSyncApi -> submissionsApi
+      const submissionId = await submitDraftOnline(d);
 
-      await submitSubmission(sub.id);
-
+      setServerSubmissionId(submissionId || null);
       setStatus("Submitted");
-      Alert.alert("Submitted", `Submission #${sub.id} submitted.`);
+      Alert.alert("Submitted", `Submission #${submissionId} submitted.`);
       navigation.goBack();
     } catch (e) {
-      Alert.alert("Submit failed", e?.message ? String(e.message) : "Failed");
+      // Keep local draft; user can retry later
+      setStatus("Submit failed (draft kept locally)");
+      Alert.alert(
+        "Submit failed",
+        `${String(e?.message || e)}\n\nYour draft is still saved locally. Retry later from Offline Sync.`
+      );
     } finally {
       setBusy(false);
     }
-  }
+  }, [canRenderFields, navigation, persistLocalDraft, validateLocation]);
 
   const debugFieldsCount = normalizeSchemaJson(schemaJson)?.fields?.length ?? 0;
   const debugMappingKeysCount = Object.keys(mappingJson || {}).length;
@@ -415,7 +436,13 @@ export default function FormAnswerScreen({ route, navigation }) {
 
           {!!status && <Text style={styles.status}>{status}</Text>}
 
-          <LocationPicker value={location} onChange={setLocation} strict />
+          <View style={styles.modeRow}>
+            <Text style={styles.muted}>
+              Mode: {mode === "draft" ? "Draft" : "New"} • Draft ID: {draftId || "—"}
+            </Text>
+          </View>
+
+          <LocationPicker value={location} onChange={setLocation} strict={false} />
 
           <View style={styles.card}>
             <View style={styles.cardHeader}>
@@ -431,13 +458,13 @@ export default function FormAnswerScreen({ route, navigation }) {
               <View style={{ paddingVertical: 10 }}>
                 <Text style={styles.muted}>No schema fields loaded for this form/year.</Text>
                 <Text style={styles.mutedSmall}>
-                  Expected: forms API returns schema_versions OR fallback endpoint returns schema_json + id.
+                  If you plan full offline answering, cache schema JSON too (not just mapping).
                 </Text>
               </View>
             ) : (
               <SchemaFormRenderer
                 schemaJson={schemaJson}
-                mappingJson={mappingJson} // ✅ NEW: enables dropdowns from mapping_json
+                mappingJson={mappingJson}
                 answers={answers}
                 onChangeAnswers={setAnswers}
                 snapshots={snapshots}
@@ -452,9 +479,7 @@ export default function FormAnswerScreen({ route, navigation }) {
               disabled={busy}
               onPress={onSaveDraft}
             >
-              <Text style={styles.btnTextOutline}>
-                {busy ? "Please wait..." : "Save Draft"}
-              </Text>
+              <Text style={styles.btnTextOutline}>{busy ? "Please wait..." : "Save Draft (Local)"}</Text>
             </Pressable>
 
             <Pressable
@@ -462,19 +487,9 @@ export default function FormAnswerScreen({ route, navigation }) {
               disabled={busy}
               onPress={onSubmit}
             >
-              <Text style={styles.btnTextPrimary}>
-                {busy ? "Please wait..." : "Submit"}
-              </Text>
+              <Text style={styles.btnTextPrimary}>{busy ? "Please wait..." : "Submit (Online)"}</Text>
             </Pressable>
           </View>
-
-          {submission?.id ? (
-            <Text style={styles.muted}>Submission ID: #{submission.id}</Text>
-          ) : (
-            <Text style={styles.muted}>
-              No submission created yet (auto-create on first save/submit).
-            </Text>
-          )}
 
           <Text style={styles.debug}>
             schema_version_id: {schemaVersionId ? String(schemaVersionId) : "null"} • fields:{" "}
@@ -495,6 +510,8 @@ const styles = StyleSheet.create({
   status: { fontSize: 12, color: "#0f766e" },
   muted: { fontSize: 12, color: "#666" },
   mutedSmall: { fontSize: 11, color: "#777", marginTop: 6 },
+
+  modeRow: { marginTop: -6 },
 
   card: { borderWidth: 1, borderColor: "#eee", borderRadius: 16, padding: 14, gap: 10 },
   cardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
@@ -517,8 +534,8 @@ const styles = StyleSheet.create({
   btnOutline: { borderWidth: 1, borderColor: "#ddd", backgroundColor: "#fff" },
   btnPrimary: { backgroundColor: "#111" },
   btnDisabled: { opacity: 0.6 },
-  btnTextOutline: { fontSize: 14, fontWeight: "800", color: "#111" },
-  btnTextPrimary: { fontSize: 14, fontWeight: "800", color: "#fff" },
+  btnTextOutline: { fontSize: 13, fontWeight: "800", color: "#111", textAlign: "center" },
+  btnTextPrimary: { fontSize: 13, fontWeight: "800", color: "#fff", textAlign: "center" },
 
   debug: { marginTop: 8, fontSize: 11, color: "#999" },
 });

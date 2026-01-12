@@ -1,8 +1,9 @@
 // mobile/src/navigation/AppTabs.js
 import React from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 import DashboardScreen from "../screens/app/DashboardScreen";
 import HistoryScreen from "../screens/app/HistoryScreen";
@@ -10,9 +11,7 @@ import OfflineSyncScreen from "../screens/app/OfflineSyncScreen";
 import SettingsScreen from "../screens/app/SettingsScreen";
 import FormsStack from "./FormsStack";
 
-import { Ionicons } from "@expo/vector-icons";
-
-const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 function iconFor(routeName, focused) {
   switch (routeName) {
@@ -31,69 +30,37 @@ function iconFor(routeName, focused) {
   }
 }
 
-function FancyTabBar({ state, descriptors, navigation }) {
+function TopTabsHeader({ currentRouteName, onNavigate }) {
   const insets = useSafeAreaInsets();
+  const tabs = ["Dashboard", "Forms", "History", "Sync", "Settings"];
 
   return (
-    <View
-      style={[
-        styles.barWrap,
-        { paddingBottom: Math.max(insets.bottom, 10) },
-      ]}
-    >
-      <View style={styles.bar}>
-        {state.routes.map((route, index) => {
-          const focused = state.index === index;
-          const { options } = descriptors[route.key];
-
-          const label =
-            options.tabBarLabel ??
-            options.title ??
-            route.name;
-
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
-
-            if (!focused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
-
-          const onLongPress = () => {
-            navigation.emit({ type: "tabLongPress", target: route.key });
-          };
-
+    <View style={[styles.headerWrap, { paddingTop: insets.top }]}>
+      <View style={styles.topBar}>
+        {tabs.map((name) => {
+          const focused = currentRouteName === name;
           const color = focused ? "#16a34a" : "#64748b";
 
           return (
             <Pressable
-              key={route.key}
-              accessibilityRole="button"
-              accessibilityState={focused ? { selected: true } : {}}
-              accessibilityLabel={options.tabBarAccessibilityLabel}
-              testID={options.tabBarTestID}
-              onPress={onPress}
-              onLongPress={onLongPress}
-              style={styles.item}
+              key={name}
+              onPress={() => onNavigate(name)}
+              style={[styles.topItem, focused && styles.topItemActive]}
+              hitSlop={10}
             >
-              <View style={[styles.iconPill, focused && styles.iconPillActive]}>
-                <Ionicons
-                  name={iconFor(route.name, focused)}
-                  size={Platform.OS === "ios" ? 22 : 20}
-                  color={color}
-                />
-              </View>
-
+              <Ionicons
+                name={iconFor(name, focused)}
+                size={Platform.OS === "ios" ? 22 : 20}
+                color={color}
+                style={styles.topIcon}
+              />
               <Text
                 numberOfLines={1}
-                style={[styles.label, { color }, focused && styles.labelActive]}
+                style={[styles.topLabel, { color }, focused && styles.topLabelActive]}
               >
-                {label}
+                {name}
               </Text>
+              {focused ? <View style={styles.activeUnderline} /> : <View style={styles.underlineSpacer} />}
             </Pressable>
           );
         })}
@@ -104,76 +71,92 @@ function FancyTabBar({ state, descriptors, navigation }) {
 
 export default function AppTabs({ onLogout }) {
   return (
-    <Tab.Navigator
-      screenOptions={{ headerShown: false }}
-      tabBar={(props) => <FancyTabBar {...props} />}
+    <Stack.Navigator
+      screenOptions={({ navigation, route }) => ({
+        // Use our custom header (NOT overlay, not absolute)
+        headerShown: true,
+        header: () => (
+          <TopTabsHeader
+            currentRouteName={route.name}
+            onNavigate={(name) => {
+              if (route.name !== name) navigation.navigate(name);
+            }}
+          />
+        ),
+
+        // Important: keeps content below header in the stack layout
+        contentStyle: { backgroundColor: "#fff" },
+      })}
     >
-      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Stack.Screen name="Dashboard" component={DashboardScreen} />
 
-      <Tab.Screen
-        name="Forms"
-        component={FormsStack}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="Forms" component={FormsStack} />
 
-      <Tab.Screen name="History" component={HistoryScreen} />
-      <Tab.Screen name="Sync" component={OfflineSyncScreen} />
+      <Stack.Screen name="History" component={HistoryScreen} />
 
-      <Tab.Screen name="Settings">
+      <Stack.Screen name="Sync" component={OfflineSyncScreen} />
+
+      <Stack.Screen name="Settings">
         {(props) => <SettingsScreen {...props} onLogout={onLogout} />}
-      </Tab.Screen>
-    </Tab.Navigator>
+      </Stack.Screen>
+    </Stack.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-  barWrap: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 14,
-  },
-  bar: {
+  headerWrap: {
     backgroundColor: "#ffffff",
-    borderRadius: 18,
-
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-
-    paddingTop: 10,
-    paddingHorizontal: 8,
-
-    // shadow
-    elevation: 18,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: -4 },
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(15, 23, 42, 0.08)",
+    zIndex: 9999,
+    elevation: 50,
   },
-  item: {
+
+  topBar: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "stretch",
+    justifyContent: "space-between",
+    paddingHorizontal: 10,
+
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+  },
+
+  topItem: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 8,
+    borderRadius: 14,
+    marginHorizontal: 4,
   },
-  iconPill: {
-    width: 42,
-    height: 32,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
+
+  topItemActive: {
+    backgroundColor: "rgba(22, 163, 74, 0.08)",
   },
-  iconPillActive: {
-    backgroundColor: "rgba(22, 163, 74, 0.12)",
+
+  topIcon: { marginBottom: 2 },
+
+  topLabel: { fontSize: 11, fontWeight: "700" },
+
+  topLabelActive: { fontWeight: "800" },
+
+  activeUnderline: {
+    marginTop: 6,
+    height: 3,
+    width: 18,
+    borderRadius: 999,
+    backgroundColor: "#16a34a",
   },
-  label: {
-    marginTop: 4,
-    fontSize: 11,
-    fontWeight: "600",
-  },
-  labelActive: {
-    fontWeight: "700",
+
+  underlineSpacer: {
+    marginTop: 6,
+    height: 3,
+    width: 18,
+    borderRadius: 999,
+    backgroundColor: "transparent",
   },
 });

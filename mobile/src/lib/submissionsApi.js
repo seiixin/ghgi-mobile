@@ -1,16 +1,18 @@
 // mobile/src/lib/submissionsApi.js
-// Submissions API (mobile answering)
+// Submissions API (mobile answering) - aligned with Offline Sync module.
 // Uses fetch directly (no apiFetch dependency).
 //
-// FIXES INCLUDED (targets "Network request failed" root causes):
-// 1) Hard validation for BASE_URL (must exist, must start with http/https)
-// 2) Safe URL join that avoids double slashes and supports BASE_URL with or without "/api"
-// 3) Rich network error that includes the exact URL used (critical for debugging)
-// 4) Robust payload parsing (json/text/empty) without "res.text is not a function" crashes
-// 5) Supports tokenStore getAccessToken being sync or async
-// 6) Normalizes backend responses:
-//    - { status, message, data } OR { message } OR plain payload
-// 7) Better error extraction: message + status + server payload details (when available)
+// Key guarantees:
+// 1) Validates BASE_URL (must exist; http/https)
+// 2) Safe URL join
+// 3) Rich "Network request failed" error includes URL + original error
+// 4) Robust payload parsing (json/text/empty)
+// 5) Token getter supports sync/async exports
+// 6) Normalizes backend responses {status, message, data} OR plain payload
+// 7) Exposes BOTH naming styles:
+//    - saveSubmissionAnswers (existing)
+//    - upsertAnswers (alias used by offlineSyncApi)
+//    so you don't get export mismatch issues again.
 
 import { BASE_URL } from "./config";
 import * as tokenStore from "./tokenStore";
@@ -23,21 +25,14 @@ function log(...args) {
 
 function normalizeBaseUrl() {
   const b = String(BASE_URL ?? "").trim();
-  if (!b) {
-    throw new Error("BASE_URL is empty in mobile/src/lib/config.js (submissionsApi)");
-  }
-  if (!/^https?:\/\//i.test(b)) {
-    throw new Error(`BASE_URL must start with http:// or https:// (got: ${b})`);
-  }
+  if (!b) throw new Error("BASE_URL is empty in mobile/src/lib/config.js (submissionsApi)");
+  if (!/^https?:\/\//i.test(b)) throw new Error(`BASE_URL must start with http:// or https:// (got: ${b})`);
   return b.replace(/\/+$/, "");
 }
 
 function joinUrl(base, path) {
   const b = String(base || "").replace(/\/+$/, "");
   const p = String(path || "").replace(/^\/+/, "");
-
-  // If backend mounts routers under /api but BASE_URL doesn't include it,
-  // you can keep BASE_URL with /api to be explicit. This join only concatenates safely.
   return `${b}/${p}`;
 }
 
@@ -71,51 +66,43 @@ function isFetchResponse(x) {
 }
 
 async function readPayload(res) {
-  // Normal fetch Response
-  if (isFetchResponse(res)) {
-    const ct = res.headers?.get?.("content-type") || "";
-    const looksJson = ct.includes("application/json") || ct.includes("+json");
+  if (!isFetchResponse(res)) return res ?? {};
 
-    if (looksJson) {
+  const ct = res.headers?.get?.("content-type") || "";
+  const looksJson = ct.includes("application/json") || ct.includes("+json");
+
+  if (looksJson) {
+    try {
+      return await res.json();
+    } catch {
       try {
-        return await res.json();
-      } catch {
-        // If server says json but body is invalid/empty, fall back to text
-        try {
-          if (typeof res.text === "function") {
-            const t = await res.text();
-            return t ? { message: t } : {};
-          }
-        } catch {
-          // ignore
+        if (typeof res.text === "function") {
+          const t = await res.text();
+          return t ? { message: t } : {};
         }
-        return {};
-      }
+      } catch {}
+      return {};
     }
-
-    if (typeof res.text === "function") {
-      try {
-        const t = await res.text();
-        return t ? { message: t } : {};
-      } catch {
-        return {};
-      }
-    }
-
-    return {};
   }
 
-  // If some wrapper returned already-parsed payload
-  return res ?? {};
+  if (typeof res.text === "function") {
+    try {
+      const t = await res.text();
+      return t ? { message: t } : {};
+    } catch {
+      return {};
+    }
+  }
+
+  return {};
 }
 
 function unwrapData(payload) {
-  // backend: { status, message, data }
+  // backend often returns { status:"ok", message:"..", data:{...} }
   return payload?.data ?? payload;
 }
 
 function pickErrorMessage(payload) {
-  // Most common backend conventions
   const m =
     payload?.message ||
     payload?.error?.message ||
@@ -125,7 +112,6 @@ function pickErrorMessage(payload) {
 
   if (m) return String(m);
 
-  // As last resort, stringify something readable
   try {
     return typeof payload === "string" ? payload : JSON.stringify(payload);
   } catch {
@@ -152,10 +138,7 @@ async function requestJson(path, { method = "GET", body = undefined, headers = {
     ...headers,
   });
 
-  log(`${method} ${url}`, {
-    hasAuth: !!finalHeaders.Authorization,
-    hasBody: body !== undefined,
-  });
+  log(`${method} ${url}`, { hasAuth: !!finalHeaders.Authorization, hasBody: body !== undefined });
 
   let res;
   try {
@@ -165,12 +148,12 @@ async function requestJson(path, { method = "GET", body = undefined, headers = {
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch (e) {
-    // THIS is where RN throws "Network request failed"
-    // Make sure the thrown error includes the exact URL used.
-    throw enrichError(
-      new Error(`Network request failed (url=${url})`),
-      { url, method, status: undefined, payload: { original: e?.message ?? String(e) } }
-    );
+    throw enrichError(new Error(`Network request failed (url=${url})`), {
+      url,
+      method,
+      status: undefined,
+      payload: { original: e?.message ?? String(e) },
+    });
   }
 
   const payload = await readPayload(res);
@@ -196,13 +179,19 @@ export async function createSubmission({
   prov_name = null,
   city_name = null,
   brgy_name = null,
-}) {
+  // tolerate camelCase too
+  formTypeId,
+  schemaVersionId,
+} = {}) {
+  const ft = form_type_id ?? formTypeId;
+  const sv = schema_version_id ?? schemaVersionId;
+
   return await requestJson("/submissions", {
     method: "POST",
     body: {
-      form_type_id: Number(form_type_id),
+      form_type_id: Number(ft),
       year: Number(year),
-      schema_version_id: schema_version_id === null ? null : Number(schema_version_id),
+      schema_version_id: sv === null || sv === undefined ? null : Number(sv),
       source,
       reg_name,
       prov_name,
@@ -218,7 +207,6 @@ export async function saveSubmissionAnswers(
     mode = "draft",
     answers = {},
     snapshots = {},
-    // allow either `location: {..}` OR top-level location keys
     location = null,
     reg_name = null,
     prov_name = null,
@@ -242,6 +230,16 @@ export async function saveSubmissionAnswers(
   });
 }
 
+// Alias used by offlineSyncApi.js (upsertSubmissionAnswers controller)
+export async function upsertAnswers(submissionId, answers = {}, location = {}) {
+  return await saveSubmissionAnswers(submissionId, {
+    mode: "draft",
+    answers,
+    snapshots: {}, // offline module doesn't require snapshots; FormAnswer can pass snapshots via saveSubmissionAnswers
+    location,
+  });
+}
+
 export async function submitSubmission(submissionId) {
   return await requestJson(`/submissions/${encodeURIComponent(String(submissionId))}/submit`, {
     method: "POST",
@@ -250,7 +248,9 @@ export async function submitSubmission(submissionId) {
 }
 
 export async function getSubmission(submissionId) {
-  return await requestJson(`/submissions/${encodeURIComponent(String(submissionId))}`, { method: "GET" });
+  return await requestJson(`/submissions/${encodeURIComponent(String(submissionId))}`, {
+    method: "GET",
+  });
 }
 
 export async function listSubmissions(params = {}) {
@@ -262,4 +262,13 @@ export async function listSubmissions(params = {}) {
 
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
   return await requestJson(`/submissions${suffix}`, { method: "GET" });
+}
+
+/**
+ * Optional helper for OfflineSyncScreen bulk submit later.
+ * drafts: [{ answers, location, schemaVersionId, ... }]
+ */
+export async function submitFull(submissionId, { answers, snapshots, location } = {}) {
+  await saveSubmissionAnswers(submissionId, { mode: "submit", answers, snapshots, location });
+  return await submitSubmission(submissionId);
 }
